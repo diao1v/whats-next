@@ -36,7 +36,9 @@ forwarding email (auto-update status from received emails) and a Chrome extensio
 | Audience | Single user now; multi-user-ready data model (`user_id` on all rows). |
 | Content fetch | Plain `fetch` + readability → escalate to Cloudflare Browser Rendering → manual paste fallback. |
 | Status model | Fixed pipeline stages + free-text notes. |
-| Frontend/deploy | Vite + React SPA + Hono API on a **single Cloudflare Worker**. |
+| Frontend/deploy | **Two workers**: `apps/web` (static SPA) + `apps/api` (Hono API), deployed independently. |
+| Cross-origin | SPA→API CORS; auth via Clerk **`Authorization: Bearer` token** (no cross-site cookies). |
+| Methodology | **TDD** (red-green-refactor) for all implementation. |
 | Auth | **Clerk** (React SDK on SPA, `@clerk/backend` verify on API). |
 | UI | shadcn/ui + Tailwind. |
 | State | TanStack Query (server state) + Zustand (UI state). |
@@ -50,24 +52,28 @@ forwarding email (auto-update status from received emails) and a Chrome extensio
 
 ## 4. Architecture & Repo
 
-pnpm monorepo deployed as **one Cloudflare Worker** that serves the static SPA and
-the API (single deploy, no CORS).
+pnpm monorepo deployed as **two independent Cloudflare Workers** — a static SPA worker
+and a Hono API worker. Independent deploys; the API is a clean shared surface for the
+future email-worker and extension.
 
 ```
 seeking/
 ├── apps/
-│   ├── web/          # Vite + React SPA (the dashboard)
-│   └── worker/       # Hono API; also serves web's built assets via Workers Assets
+│   ├── web/          # Vite + React SPA, served by a static-assets worker (app.<domain>)
+│   └── api/          # Hono API worker (api.<domain>); holds all data bindings
 ├── packages/
 │   └── shared/       # Zod schemas, stage enum, shared TS types (source of truth)
 ├── pnpm-workspace.yaml
 └── (later) apps/extension, apps/email-worker
 ```
 
-- The Worker routes `/api/*` to Hono; all other paths serve the SPA (Workers Assets
-  binding, SPA fallback to `index.html`).
-- Worker bindings: **D1** (database), **R2** (raw content bucket), **AI Gateway**
-  (LLM), Clerk secrets, OpenRouter key.
+- `apps/web`: a static-assets worker serving the built SPA, with SPA fallback to
+  `index.html`. No data bindings.
+- `apps/api`: Hono routes under `/api/*`. Bindings: **D1** (database), **R2** (raw
+  content bucket), **AI Gateway** (LLM), Clerk secrets, OpenRouter key.
+- **CORS:** the API allows the SPA origin. Auth travels as a Clerk
+  `Authorization: Bearer` token (not cross-site cookies), which also matches how the
+  future machine clients authenticate.
 - `packages/shared` is the **single source of truth**: the Zod extraction schema and
   the stage enum are consumed by the LLM (JSON Schema for structured output), the API
   (request/row validation), and the SPA (inferred TS types).
@@ -178,8 +184,11 @@ that stages don't.
 
 ## 9. Auth (Clerk)
 
-- SPA: Clerk React SDK guards the dashboard (sign-in UI, session).
-- API: each `/api/*` request verifies the Clerk session token via `@clerk/backend`.
+- SPA: Clerk React SDK guards the dashboard (sign-in UI, session). It attaches the
+  Clerk session token as an `Authorization: Bearer` header on every API call
+  (cross-origin friendly; no cross-site cookies).
+- API: each `/api/*` request verifies the bearer token via `@clerk/backend`, with CORS
+  restricted to the SPA origin.
 - `user_id` on every row **is** the Clerk user ID — the multi-user seam is real, not
   faked.
 - Machine clients (Phase 2 email-worker, Phase 3 extension) authenticate with a
@@ -195,13 +204,18 @@ that stages don't.
 - Core views: an **import bar** (paste URL), a **job list/kanban board**, a **job
   detail drawer** (edit stage/dates/notes, view snapshot + event timeline).
 
-## 11. Testing
+## 11. Testing & Methodology
 
-- Vitest with `@cloudflare/vitest-pool-workers` for the Worker/API.
+**TDD throughout** — every feature and bugfix follows red-green-refactor: write a
+failing test that pins the behavior, make it pass with the simplest change, then
+refactor. No implementation code is written before a failing test exists.
+
+- Vitest with `@cloudflare/vitest-pool-workers` for the API worker.
 - Import pipeline tested against **saved HTML fixtures** with a **mocked LLM** (no live
   network or model calls in tests).
 - Extraction schema validated by direct unit tests on the shared Zod schema.
-- Minimal component tests on the SPA's critical interactions (import, stage change).
+- Skill normalization (slug convergence, `job_skills` linking) unit-tested.
+- Component tests on the SPA's critical interactions (import, stage change).
 
 ## 12. Open Items / Future Seams
 
