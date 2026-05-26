@@ -1,6 +1,11 @@
-import type { Job } from "@seeking/shared";
+import type { Job, JobUpdate } from "@seeking/shared";
+import { addEvent, type EventRow } from "./events";
 
 const newId = () => crypto.randomUUID();
+
+const COLUMN_FOR: Record<keyof JobUpdate, string> = {
+  stage: "stage", applied_date: "applied_date", next_action_at: "next_action_at", notes: "notes",
+};
 
 export async function ensureUser(db: D1Database, id: string, email: string): Promise<void> {
   await db.prepare(
@@ -33,6 +38,34 @@ export async function listJobs(db: D1Database, userId: string): Promise<Job[]> {
     "SELECT * FROM jobs WHERE user_id = ? ORDER BY created_at DESC"
   ).bind(userId).all();
   return Promise.all(results.map((r) => hydrate(db, r as Record<string, unknown>)));
+}
+
+export async function updateJob(db: D1Database, userId: string, id: string, patch: JobUpdate): Promise<Job | null> {
+  const current = await getJob(db, userId, id);
+  if (!current) return null;
+
+  const sets: string[] = [];
+  const vals: unknown[] = [];
+  for (const key of Object.keys(patch) as (keyof JobUpdate)[]) {
+    sets.push(`${COLUMN_FOR[key]} = ?`);
+    vals.push(patch[key] ?? null);
+  }
+  if (sets.length > 0) {
+    sets.push("updated_at = datetime('now')");
+    vals.push(id, userId);
+    await db.prepare(`UPDATE jobs SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).bind(...vals).run();
+  }
+  if (patch.stage && patch.stage !== current.stage) {
+    await addEvent(db, userId, id, "status_change", { from: current.stage, to: patch.stage });
+  }
+  return getJob(db, userId, id);
+}
+
+export async function listEvents(db: D1Database, userId: string, jobId: string): Promise<EventRow[]> {
+  const { results } = await db.prepare(
+    "SELECT * FROM events WHERE job_id = ? AND user_id = ? ORDER BY created_at ASC"
+  ).bind(jobId, userId).all<EventRow>();
+  return results;
 }
 
 async function hydrate(db: D1Database, row: Record<string, unknown>): Promise<Job> {
