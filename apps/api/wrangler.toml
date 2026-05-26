@@ -1,0 +1,23 @@
+name = "seeking-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "seeking-db"
+database_id = "PLACEHOLDER_SET_AFTER_d1_create"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "RAW_BUCKET"
+bucket_name = "seeking-raw"
+
+[browser]
+binding = "BROWSER"
+
+[vars]
+ALLOWED_ORIGIN = "http://localhost:5173"
+AI_GATEWAY_URL = "https://gateway.ai.cloudflare.com/v1/ACCOUNT/GATEWAY/openrouter"
+EXTRACTION_MODEL = "google/gemini-2.0-flash-exp:free"
+# Secrets (set via `wrangler secret put`): CLERK_SECRET_KEY, OPENROUTER_API_KEY
