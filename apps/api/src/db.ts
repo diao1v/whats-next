@@ -1,5 +1,6 @@
-import type { Job, JobUpdate } from "@seeking/shared";
+import type { Job, JobUpdate, Extraction, ImportStatus, SourceMethod } from "@seeking/shared";
 import { addEvent, type EventRow } from "./events";
+import { linkSkills } from "./skills";
 
 const newId = () => crypto.randomUUID();
 
@@ -59,6 +60,33 @@ export async function updateJob(db: D1Database, userId: string, id: string, patc
     await addEvent(db, userId, id, "status_change", { from: current.stage, to: patch.stage });
   }
   return getJob(db, userId, id);
+}
+
+export async function markImportStatus(db: D1Database, id: string, status: ImportStatus): Promise<void> {
+  await db.prepare("UPDATE jobs SET import_status = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(status, id).run();
+}
+
+export async function setSnapshot(db: D1Database, id: string, text: string): Promise<void> {
+  await db.prepare("UPDATE jobs SET snapshot = ? WHERE id = ?").bind(text, id).run();
+}
+
+export async function applyExtraction(
+  db: D1Database, userId: string, id: string, ex: Extraction, method: SourceMethod, model: string, rawKey: string | null
+): Promise<void> {
+  await db.prepare(
+    `UPDATE jobs SET company_name=?, is_agency=?, agency_name=?, job_title=?, role=?, level=?,
+       salary_min=?, salary_max=?, salary_currency=?, salary_period=?, salary_raw_text=?,
+       location=?, is_remote=?, deadline=?, apply_url=?, raw_content_key=?,
+       source_method=?, extraction_model=?, stage='Saved', import_status='ready', updated_at=datetime('now')
+     WHERE id=? AND user_id=?`
+  ).bind(
+    ex.company_name, ex.is_agency ? 1 : 0, ex.agency_name, ex.job_title, ex.role, ex.level,
+    ex.salary_min, ex.salary_max, ex.salary_currency, ex.salary_period, ex.salary_raw_text,
+    ex.location, ex.is_remote ? 1 : 0, ex.deadline, ex.apply_url, rawKey,
+    method, model, id, userId
+  ).run();
+  await linkSkills(db, id, ex.skills);
 }
 
 export async function listEvents(db: D1Database, userId: string, jobId: string): Promise<EventRow[]> {
