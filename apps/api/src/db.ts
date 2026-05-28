@@ -96,6 +96,14 @@ export async function listEvents(db: D1Database, userId: string, jobId: string):
   return results;
 }
 
+export async function deleteJob(db: D1Database, bucket: R2Bucket, userId: string, id: string): Promise<boolean> {
+  const job = await getJob(db, userId, id);
+  if (!job) return false;
+  if (job.raw_content_key) await bucket.delete(job.raw_content_key);
+  await db.prepare("DELETE FROM jobs WHERE id = ? AND user_id = ?").bind(id, userId).run();
+  return true;
+}
+
 async function hydrate(db: D1Database, row: Record<string, unknown>): Promise<Job> {
   const { results } = await db.prepare(
     "SELECT s.name FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id = ?"

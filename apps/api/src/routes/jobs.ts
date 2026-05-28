@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { importRequestSchema, jobUpdateSchema } from "@seeking/shared";
 import type { Env } from "../index";
-import { ensureUser, createImportingJob, listJobs, getJob, updateJob, listEvents } from "../db";
+import { ensureUser, createImportingJob, listJobs, getJob, updateJob, listEvents, deleteJob } from "../db";
 import { runImport } from "../import";
 import { realFetchDeps } from "../extract/fetcher";
 import { extractWithLLM } from "../extract/llm";
@@ -41,3 +41,8 @@ jobs.patch("/:id", zValidator("json", jobUpdateSchema), async (c) => {
 
 jobs.get("/:id/events", async (c) =>
   c.json(await listEvents(c.env.DB, c.get("userId"), c.req.param("id"))));
+
+jobs.delete("/:id", async (c) => {
+  const ok = await deleteJob(c.env.DB, c.env.RAW_BUCKET, c.get("userId"), c.req.param("id"));
+  return ok ? c.body(null, 204) : c.json({ error: "not found" }, 404);
+});
