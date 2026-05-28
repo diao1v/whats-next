@@ -1,17 +1,17 @@
-name = "seeking-api"
+name = "whats-next-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-15"
 compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "seeking-db"
+database_name = "whats-next-db"
 database_id = "PLACEHOLDER_SET_AFTER_d1_create"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
 binding = "RAW_BUCKET"
-bucket_name = "seeking-raw"
+bucket_name = "whats-next-raw"
 
 [browser]
 binding = "BROWSER"

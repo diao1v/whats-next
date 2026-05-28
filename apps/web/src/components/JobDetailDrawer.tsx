@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { STAGES, type Job, type JobUpdate } from "@seeking/shared";
+import { STAGES, type Job, type JobUpdate } from "@whats-next/shared";
 
 export function JobDetailDrawer({
   job, onUpdate, onClose, onPaste,

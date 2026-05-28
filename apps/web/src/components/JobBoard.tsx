@@ -1,4 +1,4 @@
-import { STAGES, type Job, type Stage } from "@seeking/shared";
+import { STAGES, type Job, type Stage } from "@whats-next/shared";
 
 export function JobBoard({ jobs, onSelect }: { jobs: Job[]; onSelect: (id: string) => void }) {
   const byStage = (s: Stage) => jobs.filter((j) => j.stage === s);

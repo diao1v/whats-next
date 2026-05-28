@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { importRequestSchema, jobUpdateSchema } from "@seeking/shared";
+import { importRequestSchema, jobUpdateSchema } from "@whats-next/shared";
 import type { Env } from "../index";
 import { ensureUser, createImportingJob, listJobs, getJob, updateJob, listEvents, deleteJob } from "../db";
 import { runImport } from "../import";

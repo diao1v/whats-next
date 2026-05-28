@@ -29,7 +29,7 @@ importers:
       '@mozilla/readability':
         specifier: 0.6.0
         version: 0.6.0
-      '@seeking/shared':
+      '@whats-next/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       hono:
@@ -72,12 +72,12 @@ importers:
       '@clerk/clerk-react':
         specifier: 5.22.1
         version: 5.22.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@seeking/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@tanstack/react-query':
         specifier: 5.100.14
         version: 5.100.14(react@18.3.1)
+      '@whats-next/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       react:
         specifier: 18.3.1
         version: 18.3.1

@@ -14,7 +14,7 @@ export function App() {
 
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Seeking</h1>
+      <h1 className="mb-4 text-2xl font-bold">What&apos;s Next</h1>
       <ImportBar pending={importJob.isPending} onImport={(url) => importJob.mutate({ url })} />
       <div className="mt-6">
         <JobBoard jobs={jobs} onSelect={selectJob} />

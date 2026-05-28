@@ -1,4 +1,4 @@
-import type { Job, JobUpdate, ImportRequest } from "@seeking/shared";
+import type { Job, JobUpdate, ImportRequest } from "@whats-next/shared";
 
 export interface ApiOptions {
   baseUrl: string;

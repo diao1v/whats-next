@@ -1,5 +1,5 @@
 {
-  "name": "@seeking/api",
+  "name": "@whats-next/api",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -7,11 +7,11 @@
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "migrate:local": "wrangler d1 migrations apply seeking-db --local",
-    "migrate:remote": "wrangler d1 migrations apply seeking-db --remote"
+    "migrate:local": "wrangler d1 migrations apply whats-next-db --local",
+    "migrate:remote": "wrangler d1 migrations apply whats-next-db --remote"
   },
   "dependencies": {
-    "@seeking/shared": "workspace:*",
+    "@whats-next/shared": "workspace:*",
     "hono": "4.12.23",
     "@hono/zod-validator": "0.8.0",
     "@clerk/backend": "3.4.13",

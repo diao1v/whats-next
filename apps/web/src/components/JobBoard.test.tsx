@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { JobBoard } from "./JobBoard";
-import type { Job } from "@seeking/shared";
+import type { Job } from "@whats-next/shared";
 
 const job = (over: Partial<Job>): Job => ({
   id: "j1", user_id: "u1", company_name: "Acme", is_agency: false, agency_name: null,

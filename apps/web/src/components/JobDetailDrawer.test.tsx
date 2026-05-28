@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { JobDetailDrawer } from "./JobDetailDrawer";
-import type { Job } from "@seeking/shared";
+import type { Job } from "@whats-next/shared";
 
 const baseJob: Job = {
   id: "j1", user_id: "u1", company_name: "Acme", is_agency: false, agency_name: null,
