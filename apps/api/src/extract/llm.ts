@@ -1,4 +1,4 @@
-import { extractionSchema, type Extraction } from "@seeking/shared";
+import { extractionSchema, type Extraction } from "@whats-next/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 export interface LLMConfig { gatewayUrl: string; apiKey: string; model: string; }

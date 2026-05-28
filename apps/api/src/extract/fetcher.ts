@@ -9,7 +9,7 @@ export interface FetchDeps {
   renderHtml: (url: string) => Promise<string>;
 }
 
-const UA = "Mozilla/5.0 (compatible; SeekingBot/1.0)";
+const UA = "Mozilla/5.0 (compatible; WhatsNextBot/1.0)";
 
 export async function fetchContent(url: string, deps: FetchDeps): Promise<FetchResult> {
   let html: string | null = null;

@@ -1,4 +1,4 @@
-import type { Job, JobUpdate, Extraction, ImportStatus, SourceMethod } from "@seeking/shared";
+import type { Job, JobUpdate, Extraction, ImportStatus, SourceMethod } from "@whats-next/shared";
 import { addEvent, type EventRow } from "./events";
 import { linkSkills } from "./skills";
 

@@ -1,4 +1,4 @@
-import type { Extraction, Job, SourceMethod } from "@seeking/shared";
+import type { Extraction, Job, SourceMethod } from "@whats-next/shared";
 import { extractReadable, isThin } from "./extract/readability";
 import { fetchContent, type FetchDeps } from "./extract/fetcher";
 import { applyExtraction, markImportStatus, setSnapshot } from "./db";
