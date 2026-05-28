@@ -1,0 +1,33 @@
+{
+  "name": "@seeking/api",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "migrate:local": "wrangler d1 migrations apply seeking-db --local",
+    "migrate:remote": "wrangler d1 migrations apply seeking-db --remote"
+  },
+  "dependencies": {
+    "@seeking/shared": "workspace:*",
+    "hono": "4.12.23",
+    "@hono/zod-validator": "0.8.0",
+    "@clerk/backend": "3.4.13",
+    "zod": "3.25.76",
+    "zod-to-json-schema": "3.25.2",
+    "linkedom": "0.18.12",
+    "@mozilla/readability": "0.6.0",
+    "@cloudflare/puppeteer": "1.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.94.0",
+    "@cloudflare/vitest-pool-workers": "0.16.9",
+    "@cloudflare/workers-types": "4.20260526.1",
+    "@vitest/runner": "4.1.7",
+    "@vitest/snapshot": "4.1.7",
+    "vitest": "4.1.7",
+    "typescript": "5.7.3"
+  }
+}
