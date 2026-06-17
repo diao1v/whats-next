@@ -58,14 +58,15 @@ a local D1; the import pipeline is tested with HTML fixtures and a mocked LLM (n
    ```bash
    pnpm --filter @whats-next/api migrate:local
    ```
-2. Provide local secrets in `apps/api/.dev.vars`:
+2. Provide local secrets in `apps/api/.dev.vars` (git-ignored):
    ```
    CLERK_SECRET_KEY=sk_test_...
    OPENROUTER_API_KEY=sk-or-...
+   AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1/<account>/<gateway>/openrouter
    ```
-3. Set `[vars] AI_GATEWAY_URL` in `apps/api/wrangler.toml` to your gateway path
-   (`https://gateway.ai.cloudflare.com/v1/<account>/<gateway>/openrouter`).
-4. Run it:
+   `AI_GATEWAY_URL` is treated as a secret because its path contains the account id, so
+   it is **not** committed to `wrangler.toml`.
+3. Run it:
    ```bash
    pnpm --filter @whats-next/api dev    # http://localhost:8787
    ```
@@ -87,6 +88,13 @@ pnpm --filter @whats-next/web dev       # http://localhost:5173
 
 > These steps require `wrangler login` and create real Cloudflare resources.
 
+The account id is kept out of this public repo. Export it for every wrangler command
+that needs it (it is not stored in `wrangler.toml`):
+
+```bash
+export CLOUDFLARE_ACCOUNT_ID="<your-account-id>"   # see `wrangler whoami`
+```
+
 1. Create the D1 database and R2 bucket, then paste the printed `database_id` into
    `apps/api/wrangler.toml` (replacing `PLACEHOLDER_SET_AFTER_d1_create`):
    ```bash
@@ -95,10 +103,11 @@ pnpm --filter @whats-next/web dev       # http://localhost:5173
    pnpm exec wrangler r2 bucket create whats-next-raw
    pnpm exec wrangler d1 migrations apply whats-next-db --remote
    ```
-2. Set API secrets:
+2. Set API secrets (`AI_GATEWAY_URL` is a secret because its path embeds the account id):
    ```bash
    pnpm exec wrangler secret put CLERK_SECRET_KEY
    pnpm exec wrangler secret put OPENROUTER_API_KEY
+   pnpm exec wrangler secret put AI_GATEWAY_URL
    ```
 3. Deploy the API, then point the web app at it and deploy the web worker:
    ```bash
