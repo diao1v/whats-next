@@ -8,7 +8,8 @@ const jsonSchema = zodToJsonSchema(extractionSchema);
 
 const SYSTEM = "You extract structured job-posting data. Return ONLY JSON matching the schema. " +
   "Use null for unknown fields. is_agency=true only when the poster is a recruiting agency, " +
-  "not the hiring company; then set agency_name.";
+  "not the hiring company; then set agency_name. For `description`, write a concise 2-4 sentence " +
+  "summary covering the role and its key responsibilities.";
 
 /**
  * Extracts structured job data, trying each configured model in order until one

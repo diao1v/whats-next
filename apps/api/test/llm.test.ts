@@ -5,7 +5,7 @@ const valid = {
   company_name: "Acme", is_agency: false, agency_name: null, job_title: "Eng", role: "Backend",
   level: "Senior", salary_min: null, salary_max: null, salary_currency: null, salary_period: null,
   salary_raw_text: null, location: "Remote", is_remote: true, skills: ["TypeScript"], deadline: null,
-  apply_url: null,
+  apply_url: null, description: "A backend role.",
 };
 
 function gatewayResponse(obj: unknown) {
