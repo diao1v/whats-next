@@ -14,13 +14,14 @@ function gatewayResponse(obj: unknown) {
 }
 
 describe("extractWithLLM", () => {
-  const cfg = { gatewayUrl: "https://gw/openrouter", apiKey: "k", model: "test-model", gatewayToken: "gw-token" };
+  const cfg = { gatewayUrl: "https://gw/openrouter", apiKey: "k", models: ["test-model"], gatewayToken: "gw-token" };
 
-  it("returns parsed, validated extraction", async () => {
+  it("returns parsed, validated extraction plus the model used", async () => {
     const doFetch = vi.fn().mockResolvedValue(gatewayResponse(valid));
     const out = await extractWithLLM("job text", cfg, doFetch);
-    expect(out.company_name).toBe("Acme");
-    expect(out.skills).toEqual(["TypeScript"]);
+    expect(out.extraction.company_name).toBe("Acme");
+    expect(out.extraction.skills).toEqual(["TypeScript"]);
+    expect(out.model).toBe("test-model");
   });
 
   it("throws when the model returns invalid JSON schema", async () => {
@@ -28,7 +29,7 @@ describe("extractWithLLM", () => {
     await expect(extractWithLLM("job text", cfg, doFetch)).rejects.toThrow();
   });
 
-  it("posts to the gateway chat completions endpoint with the model", async () => {
+  it("posts to the gateway chat completions endpoint with the model and auth headers", async () => {
     const doFetch = vi.fn().mockResolvedValue(gatewayResponse(valid));
     await extractWithLLM("job text", cfg, doFetch);
     const [url, init] = doFetch.mock.calls[0];
@@ -43,5 +44,24 @@ describe("extractWithLLM", () => {
     await extractWithLLM("job text", { ...cfg, gatewayToken: undefined }, doFetch);
     const [, init] = doFetch.mock.calls[0];
     expect(init.headers["cf-aig-authorization"]).toBeUndefined();
+  });
+
+  it("falls back to the next model when the first is rate-limited (429)", async () => {
+    const doFetch = vi.fn()
+      .mockResolvedValueOnce(new Response("rate limited", { status: 429 }))
+      .mockResolvedValueOnce(gatewayResponse(valid));
+    const out = await extractWithLLM("job text", { ...cfg, models: ["primary", "fallback"] }, doFetch);
+    expect(out.model).toBe("fallback");
+    expect(out.extraction.company_name).toBe("Acme");
+    expect(JSON.parse(doFetch.mock.calls[0][1].body).model).toBe("primary");
+    expect(JSON.parse(doFetch.mock.calls[1][1].body).model).toBe("fallback");
+  });
+
+  it("throws when every model fails", async () => {
+    const doFetch = vi.fn().mockResolvedValue(new Response("rate limited", { status: 429 }));
+    await expect(
+      extractWithLLM("job text", { ...cfg, models: ["a", "b"] }, doFetch)
+    ).rejects.toThrow();
+    expect(doFetch).toHaveBeenCalledTimes(2);
   });
 });

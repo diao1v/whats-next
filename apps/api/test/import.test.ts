@@ -23,12 +23,12 @@ describe("runImport", () => {
     const job = await createImportingJob(env.DB, "u1", "https://acme.com/1");
     await runImport(env.DB, env.RAW_BUCKET, "u1", job, null, {
       fetchDeps: { doFetch: vi.fn().mockResolvedValue(new Response(richHtml)), renderHtml: vi.fn() },
-      extract: vi.fn().mockResolvedValue(extraction),
-      model: "test-model",
+      extract: vi.fn().mockResolvedValue({ extraction, model: "test-model" }),
     });
     const updated = await getJob(env.DB, "u1", job.id);
     expect(updated?.import_status).toBe("ready");
     expect(updated?.company_name).toBe("Acme");
+    expect(updated?.extraction_model).toBe("test-model");
     expect(updated?.skills).toEqual(["TypeScript"]);
     expect(updated?.source_method).toBe("fetch");
     expect(updated?.raw_content_key).toBeTruthy();
@@ -40,7 +40,6 @@ describe("runImport", () => {
     await runImport(env.DB, env.RAW_BUCKET, "u1", job, null, {
       fetchDeps: { doFetch: vi.fn().mockResolvedValue(new Response(thin)), renderHtml: vi.fn().mockResolvedValue(thin) },
       extract: vi.fn(),
-      model: "test-model",
     });
     const updated = await getJob(env.DB, "u1", job.id);
     expect(updated?.import_status).toBe("needs_paste");
@@ -48,10 +47,10 @@ describe("runImport", () => {
 
   it("uses pastedText directly, skipping fetch", async () => {
     const job = await createImportingJob(env.DB, "u1", "https://walled.com/1");
-    const extract = vi.fn().mockResolvedValue(extraction);
+    const extract = vi.fn().mockResolvedValue({ extraction, model: "test-model" });
     await runImport(env.DB, env.RAW_BUCKET, "u1", job, "Pasted job description ".repeat(40), {
       fetchDeps: { doFetch: vi.fn(), renderHtml: vi.fn() },
-      extract, model: "test-model",
+      extract,
     });
     const updated = await getJob(env.DB, "u1", job.id);
     expect(updated?.import_status).toBe("ready");
@@ -63,7 +62,6 @@ describe("runImport", () => {
     await runImport(env.DB, env.RAW_BUCKET, "u1", job, null, {
       fetchDeps: { doFetch: vi.fn().mockResolvedValue(new Response(richHtml)), renderHtml: vi.fn() },
       extract: vi.fn().mockRejectedValue(new Error("model down")),
-      model: "test-model",
     });
     const updated = await getJob(env.DB, "u1", job.id);
     expect(updated?.import_status).toBe("failed");

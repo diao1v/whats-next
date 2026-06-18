@@ -5,8 +5,7 @@ import { applyExtraction, markImportStatus, setSnapshot } from "./db";
 
 export interface ImportDeps {
   fetchDeps: FetchDeps;
-  extract: (text: string) => Promise<Extraction>;
-  model: string;
+  extract: (text: string) => Promise<{ extraction: Extraction; model: string }>;
 }
 
 export async function runImport(
@@ -35,8 +34,8 @@ export async function runImport(
     const rawKey = `raw/${job.id}.html`;
     if (html) await bucket.put(rawKey, html);
 
-    const extraction = await deps.extract(text);
-    await applyExtraction(db, userId, job.id, extraction, method, deps.model, html ? rawKey : null);
+    const { extraction, model } = await deps.extract(text);
+    await applyExtraction(db, userId, job.id, extraction, method, model, html ? rawKey : null);
     await setSnapshot(db, job.id, text);
   } catch (e) {
     console.error("import failed", job.id, e instanceof Error ? e.message : e);

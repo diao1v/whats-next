@@ -16,13 +16,13 @@ jobs.post("/import", zValidator("json", importRequestSchema), async (c) => {
   await ensureUser(c.env.DB, userId, "");
   const job = await createImportingJob(c.env.DB, userId, url);
 
+  const models = c.env.EXTRACTION_MODEL.split(",").map((m) => m.trim()).filter(Boolean);
   c.executionCtx.waitUntil(runImport(c.env.DB, c.env.RAW_BUCKET, userId, job, pastedText ?? null, {
     fetchDeps: realFetchDeps(c.env),
     extract: (text) => extractWithLLM(text, {
-      gatewayUrl: c.env.AI_GATEWAY_URL, apiKey: c.env.OPENROUTER_API_KEY, model: c.env.EXTRACTION_MODEL,
+      gatewayUrl: c.env.AI_GATEWAY_URL, apiKey: c.env.OPENROUTER_API_KEY, models,
       gatewayToken: c.env.AI_GATEWAY_TOKEN,
     }),
-    model: c.env.EXTRACTION_MODEL,
   }));
 
   return c.json(job, 201);
