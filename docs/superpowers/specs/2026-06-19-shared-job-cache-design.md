@@ -20,7 +20,8 @@ whose cleaned text already exists is reused without another LLM call.
 | Hash input | SHA-256 of the **cleaned readable text** (the LLM input / `snapshot`). |
 | Re-import (same user) | Reuse the existing entry; if content changed, re-point it to the new posting (refresh). |
 | Migration | Reset — drop `jobs`/`job_skills`, recreate. Existing test data is re-imported. |
-| API contract | Keep the flat `Job` DTO (join entry + posting); frontend unchanged. |
+| API contract | Keep the flat `Job` DTO (join entry + posting); frontend changes only for the new description display. |
+| Description | LLM-generated `description` summary on the posting, shown by default; full `snapshot` available via expand. |
 
 ## 3. Data Model
 
@@ -32,7 +33,9 @@ Replaces the single `jobs` table. `users` and `skills` are unchanged.
 - Extracted fields: `company_name`, `is_agency`, `agency_name`, `job_title`, `role`,
   `level`, `salary_min`, `salary_max`, `salary_currency`, `salary_period`,
   `salary_raw_text`, `location`, `is_remote`, `deadline`, `apply_url`, `source_site`
-- `snapshot` (cleaned text), `raw_content_key` (R2 key), `source_method`
+- `description` — LLM-generated concise summary (2–4 sentences + key responsibilities),
+  for display
+- `snapshot` (full cleaned text), `raw_content_key` (R2 key), `source_method`
   (`fetch`|`render`|`paste`), `extraction_model`
 - `created_at`
 
@@ -99,14 +102,16 @@ cleaned text.
 
 ## 6. API Contract
 
-The API keeps returning the **flat `Job` DTO** unchanged, composed by joining the
-caller's `job_entries` row with its `job_postings` row (and skills). Consequences:
+The API keeps returning the **flat `Job` DTO**, composed by joining the caller's
+`job_entries` row with its `job_postings` row (and skills). The DTO gains one field,
+`description`. Consequences:
 
 - `Job.id` is the **entry id** — the handle for stage/date/notes edits and delete.
 - While importing (no posting yet), posting-derived fields are empty/null, exactly as the
   current `importing` placeholder behaves.
-- Frontend (`api.ts`, `queries.ts`, board, drawer) needs **no changes**; the split is
-  hidden behind the existing contract.
+- Frontend impact is limited to **rendering `description`** in the drawer (summary shown
+  by default, full `snapshot` behind the existing collapse). `api.ts`, `queries.ts`, and
+  the board are otherwise unchanged; the storage split stays hidden behind the contract.
 
 Endpoint behavior:
 - `GET /api/jobs` → caller's entries joined to postings.
@@ -126,6 +131,12 @@ A new migration (`0002_*.sql`) **resets** job data:
 
 ## 8. Module Boundaries
 
+- `packages/shared/src/extraction.ts` — add `description: z.string().nullable()` to the
+  extraction schema (drives the LLM structured output and the `Job` type).
+- `packages/shared/src/job.ts` — add `description: string | null` to the `Job` DTO.
+- `src/extract/llm.ts` — system prompt asks for the concise `description` summary.
+- `apps/web/src/components/JobDetailDrawer.tsx` — render `description` (default) above the
+  collapsible full `snapshot`.
 - `src/extract/hash.ts` — `contentHash(text): Promise<string>` (Web Crypto SHA-256).
 - `src/db.ts` — split into posting + entry repository functions:
   `findPostingByHash`, `createPosting` (with ON CONFLICT re-select), `linkSkills`
@@ -150,7 +161,9 @@ A new migration (`0002_*.sql`) **resets** job data:
   shared posting.
 - **Migration:** reset migration creates the new tables; old ones gone.
 - **Routes:** `GET`/`PATCH`/`DELETE` operate on entry ids and return the flat `Job`
-  shape; delete removes the entry but not the shared posting.
+  shape (incl. `description`); delete removes the entry but not the shared posting.
+- **Extraction schema:** validates a `description` field; a cache hit reuses the stored
+  description (no second LLM call).
 
 ## 10. Known Limitation
 
