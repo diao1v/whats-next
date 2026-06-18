@@ -16,28 +16,43 @@ const baseJob: Job = {
 describe("JobDetailDrawer", () => {
   it("changing stage calls onUpdate", () => {
     const onUpdate = vi.fn();
-    render(<JobDetailDrawer job={baseJob} onUpdate={onUpdate} onClose={vi.fn()} onPaste={vi.fn()} />);
+    render(<JobDetailDrawer job={baseJob} onUpdate={onUpdate} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={vi.fn()} />);
     fireEvent.change(screen.getByLabelText(/stage/i), { target: { value: "Applied" } });
     expect(onUpdate).toHaveBeenCalledWith({ stage: "Applied" });
   });
 
   it("shows a paste box when import_status is needs_paste", () => {
     const onPaste = vi.fn();
-    render(<JobDetailDrawer job={{ ...baseJob, import_status: "needs_paste" }} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={onPaste} />);
+    render(<JobDetailDrawer job={{ ...baseJob, import_status: "needs_paste" }} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={onPaste} onDelete={vi.fn()} onRetry={vi.fn()} />);
     fireEvent.change(screen.getByPlaceholderText(/paste the job description/i), { target: { value: "Full text here" } });
     fireEvent.click(screen.getByRole("button", { name: /extract/i }));
     expect(onPaste).toHaveBeenCalledWith("Full text here");
   });
 
   it("shows the description summary", () => {
-    render(<JobDetailDrawer job={baseJob} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} />);
+    render(<JobDetailDrawer job={baseJob} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={vi.fn()} />);
     expect(screen.getByText("Build backend things.")).toBeInTheDocument();
   });
 
   it("shows the salary formatted in its own currency", () => {
     const job = { ...baseJob, salary_min: 120000, salary_max: 150000, salary_currency: "NZD", salary_period: "year" };
-    render(<JobDetailDrawer job={job} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} />);
+    render(<JobDetailDrawer job={job} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={vi.fn()} />);
     expect(screen.getByText(/120,000/)).toBeInTheDocument();
     expect(screen.getByText(/\/yr/)).toBeInTheDocument();
+  });
+
+  it("deletes after confirm", () => {
+    const onDelete = vi.fn();
+    render(<JobDetailDrawer job={baseJob} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={onDelete} onRetry={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /^delete$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm delete/i }));
+    expect(onDelete).toHaveBeenCalledWith("j1");
+  });
+
+  it("shows Retry on a failed import", () => {
+    const onRetry = vi.fn();
+    render(<JobDetailDrawer job={{ ...baseJob, import_status: "failed" }} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={onRetry} />);
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    expect(onRetry).toHaveBeenCalledWith("j1");
   });
 });
