@@ -11,6 +11,7 @@ const COLUMN_FOR: Record<keyof JobUpdate, string> = {
 export interface PostingInput extends Extraction {
   hash: string;
   snapshot: string;
+  source_site: string | null;
   method: SourceMethod;
   model: string;
   rawKey: string | null;
