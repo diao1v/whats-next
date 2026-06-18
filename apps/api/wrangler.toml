@@ -17,7 +17,7 @@ bucket_name = "whats-next-raw"
 binding = "BROWSER"
 
 [vars]
-ALLOWED_ORIGIN = "http://localhost:5173"
+ALLOWED_ORIGIN = "http://localhost:5173,https://whats-next-web.tuicaodanad.workers.dev"
 EXTRACTION_MODEL = "google/gemma-4-31b-it:free"
 # AI_GATEWAY_URL is a secret (it contains the account id) — set via `wrangler secret put`
 # (or `.dev.vars` for local dev). It is intentionally NOT committed here.

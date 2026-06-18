@@ -111,9 +111,9 @@ export CLOUDFLARE_ACCOUNT_ID="<your-account-id>"   # see `wrangler whoami`
    ```
 3. Deploy the API, then point the web app at it and deploy the web worker:
    ```bash
-   pnpm --filter @whats-next/api deploy
+   pnpm --filter @whats-next/api run deploy
    # set apps/web/.env.local VITE_API_URL to the deployed API URL, then:
-   pnpm --filter @whats-next/web deploy
+   pnpm --filter @whats-next/web run deploy
    ```
 4. Set `apps/api` `[vars] ALLOWED_ORIGIN` to the deployed web origin and redeploy the API.
 5. In the Clerk dashboard, add the deployed web origin to the allowed origins.

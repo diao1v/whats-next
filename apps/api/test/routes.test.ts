@@ -39,4 +39,11 @@ describe("job routes", () => {
     const res = await SELF.fetch("https://api/api/jobs");
     expect(res.status).toBe(401);
   });
+
+  it("reflects an allowed CORS origin (parsed from ALLOWED_ORIGIN)", async () => {
+    const res = await SELF.fetch("https://api/api/health", {
+      headers: { Origin: "http://localhost:5173" },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+  });
 });

@@ -17,8 +17,11 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
 
-app.use("/api/*", async (c, next) =>
-  cors({ origin: c.env.ALLOWED_ORIGIN, allowHeaders: ["Authorization", "Content-Type"] })(c, next));
+app.use("/api/*", async (c, next) => {
+  // ALLOWED_ORIGIN may be a single origin or a comma-separated list (e.g. local + prod).
+  const origins = c.env.ALLOWED_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean);
+  return cors({ origin: origins, allowHeaders: ["Authorization", "Content-Type"] })(c, next);
+});
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 app.use("/api/jobs/*", requireAuth);
