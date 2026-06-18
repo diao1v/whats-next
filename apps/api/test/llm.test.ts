@@ -14,7 +14,7 @@ function gatewayResponse(obj: unknown) {
 }
 
 describe("extractWithLLM", () => {
-  const cfg = { gatewayUrl: "https://gw/openrouter", apiKey: "k", model: "test-model" };
+  const cfg = { gatewayUrl: "https://gw/openrouter", apiKey: "k", model: "test-model", gatewayToken: "gw-token" };
 
   it("returns parsed, validated extraction", async () => {
     const doFetch = vi.fn().mockResolvedValue(gatewayResponse(valid));
@@ -34,5 +34,14 @@ describe("extractWithLLM", () => {
     const [url, init] = doFetch.mock.calls[0];
     expect(url).toBe("https://gw/openrouter/v1/chat/completions");
     expect(JSON.parse(init.body).model).toBe("test-model");
+    expect(init.headers.Authorization).toBe("Bearer k");
+    expect(init.headers["cf-aig-authorization"]).toBe("Bearer gw-token");
+  });
+
+  it("omits the gateway auth header when no token is configured", async () => {
+    const doFetch = vi.fn().mockResolvedValue(gatewayResponse(valid));
+    await extractWithLLM("job text", { ...cfg, gatewayToken: undefined }, doFetch);
+    const [, init] = doFetch.mock.calls[0];
+    expect(init.headers["cf-aig-authorization"]).toBeUndefined();
   });
 });

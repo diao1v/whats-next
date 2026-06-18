@@ -38,7 +38,8 @@ export async function runImport(
     const extraction = await deps.extract(text);
     await applyExtraction(db, userId, job.id, extraction, method, deps.model, html ? rawKey : null);
     await setSnapshot(db, job.id, text);
-  } catch {
+  } catch (e) {
+    console.error("import failed", job.id, e instanceof Error ? e.message : e);
     await markImportStatus(db, job.id, "failed");
   }
 }

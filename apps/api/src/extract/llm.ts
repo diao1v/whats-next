@@ -1,7 +1,7 @@
 import { extractionSchema, type Extraction } from "@whats-next/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
-export interface LLMConfig { gatewayUrl: string; apiKey: string; model: string; }
+export interface LLMConfig { gatewayUrl: string; apiKey: string; model: string; gatewayToken?: string; }
 export type DoFetch = (url: string, init: RequestInit) => Promise<Response>;
 
 const jsonSchema = zodToJsonSchema(extractionSchema);
@@ -13,9 +13,16 @@ const SYSTEM = "You extract structured job-posting data. Return ONLY JSON matchi
 export async function extractWithLLM(
   jobText: string, cfg: LLMConfig, doFetch: DoFetch = fetch
 ): Promise<Extraction> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${cfg.apiKey}`,
+    "content-type": "application/json",
+  };
+  // When the AI Gateway is in Authenticated mode, this token authorizes use of the gateway itself.
+  if (cfg.gatewayToken) headers["cf-aig-authorization"] = `Bearer ${cfg.gatewayToken}`;
+
   const res = await doFetch(`${cfg.gatewayUrl}/v1/chat/completions`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${cfg.apiKey}`, "content-type": "application/json" },
+    headers,
     body: JSON.stringify({
       model: cfg.model,
       messages: [{ role: "system", content: SYSTEM }, { role: "user", content: jobText }],

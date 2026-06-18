@@ -12,6 +12,7 @@ export interface Env {
   EXTRACTION_MODEL: string;
   CLERK_SECRET_KEY: string;
   OPENROUTER_API_KEY: string;
+  AI_GATEWAY_TOKEN?: string;
 }
 
 const app = new Hono<{ Bindings: Env; Variables: { userId: string } }>();

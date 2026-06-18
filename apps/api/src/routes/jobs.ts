@@ -20,6 +20,7 @@ jobs.post("/import", zValidator("json", importRequestSchema), async (c) => {
     fetchDeps: realFetchDeps(c.env),
     extract: (text) => extractWithLLM(text, {
       gatewayUrl: c.env.AI_GATEWAY_URL, apiKey: c.env.OPENROUTER_API_KEY, model: c.env.EXTRACTION_MODEL,
+      gatewayToken: c.env.AI_GATEWAY_TOKEN,
     }),
     model: c.env.EXTRACTION_MODEL,
   }));
