@@ -8,7 +8,7 @@ const job = (over: Partial<Job>): Job => ({
   job_title: "Backend Eng", role: "Backend", level: "Senior", salary_min: null, salary_max: null,
   salary_currency: null, salary_period: null, salary_raw_text: null, location: "Remote", is_remote: true,
   deadline: null, url: "https://a.com/1", apply_url: null, source_site: "a.com", snapshot: null,
-  raw_content_key: null, source_method: "fetch", extraction_model: "m", stage: "Saved",
+  description: null, raw_content_key: null, source_method: "fetch", extraction_model: "m", stage: "Saved",
   import_status: "ready", applied_date: null, next_action_at: null, notes: "", created_at: "", updated_at: "",
   skills: ["TypeScript"], ...over,
 });

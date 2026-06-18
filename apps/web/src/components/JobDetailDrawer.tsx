@@ -77,6 +77,10 @@ export function JobDetailDrawer({
         </a>
       )}
 
+      {job.description && (
+        <p className="mt-4 text-sm text-gray-700">{job.description}</p>
+      )}
+
       {job.snapshot && (
         <details className="mt-4">
           <summary className="cursor-pointer text-sm font-medium">Original snapshot</summary>
