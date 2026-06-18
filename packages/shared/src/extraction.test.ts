@@ -18,6 +18,7 @@ const valid = {
   skills: ["TypeScript", "Cloudflare Workers"],
   deadline: "2026-06-30",
   apply_url: "https://acme.com/apply",
+  description: "A senior backend role building developer tooling.",
 };
 
 describe("extractionSchema", () => {
@@ -33,5 +34,9 @@ describe("extractionSchema", () => {
   });
   it("requires skills to be an array of strings", () => {
     expect(() => extractionSchema.parse({ ...valid, skills: "TypeScript" })).toThrow();
+  });
+  it("accepts a nullable description", () => {
+    expect(extractionSchema.parse({ ...valid, description: "A backend role." }).description).toBe("A backend role.");
+    expect(extractionSchema.parse({ ...valid, description: null }).description).toBeNull();
   });
 });

@@ -6,7 +6,7 @@ const auth = { headers: { Authorization: "Bearer t", "content-type": "applicatio
 
 beforeAll(async () => { await applyD1Migrations(env.DB, env.TEST_MIGRATIONS); });
 beforeEach(async () => {
-  for (const t of ["job_skills", "skills", "events", "jobs", "users"]) await env.DB.prepare(`DELETE FROM ${t}`).run();
+  for (const t of ["events", "posting_skills", "skills", "job_entries", "job_postings", "users"]) await env.DB.prepare(`DELETE FROM ${t}`).run();
 });
 
 describe("DELETE /api/jobs/:id", () => {

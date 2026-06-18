@@ -2,7 +2,7 @@ export function slugifySkill(label: string): string {
   return label.toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
 }
 
-export async function linkSkills(db: D1Database, jobId: string, labels: string[]): Promise<void> {
+export async function linkPostingSkills(db: D1Database, postingId: string, labels: string[]): Promise<void> {
   for (const label of labels) {
     const slug = slugifySkill(label);
     if (!slug) continue;
@@ -13,7 +13,7 @@ export async function linkSkills(db: D1Database, jobId: string, labels: string[]
       row = { id };
     }
     await db.prepare(
-      "INSERT INTO job_skills (job_id, skill_id, raw_label) VALUES (?, ?, ?) ON CONFLICT(job_id, skill_id) DO NOTHING"
-    ).bind(jobId, row.id, label).run();
+      "INSERT INTO posting_skills (posting_id, skill_id, raw_label) VALUES (?, ?, ?) ON CONFLICT(posting_id, skill_id) DO NOTHING"
+    ).bind(postingId, row.id, label).run();
   }
 }
