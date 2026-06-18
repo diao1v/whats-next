@@ -1,35 +1,62 @@
+import { DndContext, PointerSensor, useSensor, useSensors, useDroppable, type DragEndEvent } from "@dnd-kit/core";
 import { STAGES, type Job, type Stage } from "@whats-next/shared";
+import { JobCard } from "./JobCard";
+import { SkeletonCard } from "./Skeleton";
+import { stageFromDrop } from "../lib/board";
 
-export function JobBoard({ jobs, onSelect }: { jobs: Job[]; onSelect: (id: string) => void }) {
-  const byStage = (s: Stage) => jobs.filter((j) => j.stage === s);
+function Column({ stage, children }: { stage: Stage; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: stage });
   return (
-    <div className="grid grid-cols-6 gap-3">
-      {STAGES.map((stage) => (
-        <section key={stage} className="rounded bg-gray-50 p-2">
-          <h2 className="mb-2 text-sm font-semibold">{stage}</h2>
-          <div className="space-y-2">
-            {byStage(stage).map((job) => (
-              <button
-                key={job.id}
-                onClick={() => onSelect(job.id)}
-                className="w-full rounded border bg-white p-2 text-left text-sm hover:shadow"
-              >
-                {job.import_status === "importing" ? (
-                  <span className="text-gray-400">Importing…</span>
-                ) : (
-                  <>
-                    <div className="font-medium">{job.job_title || "Untitled"}</div>
-                    <div className="text-gray-500">{job.company_name}</div>
-                    {job.import_status === "needs_paste" && (
-                      <div className="mt-1 text-xs text-amber-600">Needs paste</div>
-                    )}
-                  </>
-                )}
-              </button>
+    <section ref={setNodeRef}
+      className={`flex w-64 shrink-0 flex-col rounded-2xl border border-line bg-[#faf1e6] p-2 ${isOver ? "ring-2 ring-accent/40" : ""}`}>
+      <h2 className="mb-2 px-1 text-sm font-bold text-ink">{stage}</h2>
+      <div className="flex flex-col gap-2">{children}</div>
+    </section>
+  );
+}
+
+export function JobBoard({
+  jobs, loading, onSelect, onStageChange, onRetry,
+}: {
+  jobs: Job[];
+  loading: boolean;
+  onSelect: (id: string) => void;
+  onStageChange: (id: string, stage: Stage) => void;
+  onRetry: (id: string) => void;
+}) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  function onDragEnd(e: DragEndEvent) {
+    const job = jobs.find((x) => x.id === e.active.id);
+    if (!job) return;
+    const next = stageFromDrop(job.stage, e.over ? String(e.over.id) : null);
+    if (next) onStageChange(job.id, next);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex gap-3 overflow-x-auto">
+        {STAGES.map((s) => (
+          <section key={s} className="flex w-64 shrink-0 flex-col rounded-2xl border border-line bg-[#faf1e6] p-2">
+            <h2 className="mb-2 px-1 text-sm font-bold text-ink">{s}</h2>
+            <SkeletonCard />
+          </section>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        {STAGES.map((stage) => (
+          <Column key={stage} stage={stage}>
+            {jobs.filter((j) => j.stage === stage).map((job) => (
+              <JobCard key={job.id} job={job} onSelect={onSelect} onStageChange={onStageChange} onRetry={onRetry} />
             ))}
-          </div>
-        </section>
-      ))}
-    </div>
+          </Column>
+        ))}
+      </div>
+    </DndContext>
   );
 }
