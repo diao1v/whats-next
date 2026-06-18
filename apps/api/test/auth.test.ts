@@ -20,7 +20,14 @@ describe("requireAuth", () => {
     const res = await makeApp().request("/api/me", {}, { CLERK_SECRET_KEY: "sk" });
     expect(res.status).toBe(401);
   });
-  it("sets userId when token verifies", async () => {
+  it("sets userId when verifyToken resolves to the payload directly (v3 shape)", async () => {
+    verifyToken.mockResolvedValue({ sub: "user_123" });
+    const res = await makeApp().request("/api/me",
+      { headers: { Authorization: "Bearer good" } }, { CLERK_SECRET_KEY: "sk" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ userId: "user_123" });
+  });
+  it("also accepts the wrapped { data } shape", async () => {
     verifyToken.mockResolvedValue({ data: { sub: "user_123" } });
     const res = await makeApp().request("/api/me",
       { headers: { Authorization: "Bearer good" } }, { CLERK_SECRET_KEY: "sk" });
