@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { STAGES, type Job, type JobUpdate } from "@whats-next/shared";
+import { STAGES, formatSalary, type Job, type JobUpdate } from "@whats-next/shared";
 
 export function JobDetailDrawer({
   job, onUpdate, onClose, onPaste,
@@ -10,6 +10,7 @@ export function JobDetailDrawer({
   onPaste: (text: string) => void;
 }) {
   const [paste, setPaste] = useState("");
+  const salary = formatSalary(job);
   return (
     <aside className="fixed right-0 top-0 h-full w-[28rem] overflow-y-auto border-l bg-white p-4 shadow-xl">
       <div className="flex items-center justify-between">
@@ -17,6 +18,7 @@ export function JobDetailDrawer({
         <button onClick={onClose} aria-label="Close">✕</button>
       </div>
       <p className="text-gray-600">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</p>
+      {salary && <p className="mt-1 text-sm font-medium text-gray-800">{salary}</p>}
 
       {job.import_status === "needs_paste" && (
         <div className="my-3 rounded border border-amber-300 bg-amber-50 p-3">

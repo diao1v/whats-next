@@ -33,4 +33,11 @@ describe("JobDetailDrawer", () => {
     render(<JobDetailDrawer job={baseJob} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} />);
     expect(screen.getByText("Build backend things.")).toBeInTheDocument();
   });
+
+  it("shows the salary formatted in its own currency", () => {
+    const job = { ...baseJob, salary_min: 120000, salary_max: 150000, salary_currency: "NZD", salary_period: "year" };
+    render(<JobDetailDrawer job={job} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} />);
+    expect(screen.getByText(/120,000/)).toBeInTheDocument();
+    expect(screen.getByText(/\/yr/)).toBeInTheDocument();
+  });
 });
