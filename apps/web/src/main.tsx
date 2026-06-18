@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ClerkProvider, SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
+import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
+import { SignInLanding } from "./components/SignInLanding";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -13,7 +14,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ClerkProvider publishableKey={pubKey}>
       <QueryClientProvider client={queryClient}>
         <SignedIn><App /></SignedIn>
-        <SignedOut><div className="p-8"><SignInButton /></div></SignedOut>
+        <SignedOut><SignInLanding /></SignedOut>
       </QueryClientProvider>
     </ClerkProvider>
   </React.StrictMode>
