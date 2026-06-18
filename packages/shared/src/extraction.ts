@@ -19,6 +19,7 @@ export const extractionSchema = z.object({
   skills: z.array(z.string()),
   deadline: z.string().nullable(), // ISO-8601 date
   apply_url: z.string().nullable(),
+  description: z.string().nullable(),
 });
 
 export type Extraction = z.infer<typeof extractionSchema>;

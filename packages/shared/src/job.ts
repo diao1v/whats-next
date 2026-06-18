@@ -37,6 +37,7 @@ export interface Job {
   apply_url: string | null;
   source_site: string | null;
   snapshot: string | null;
+  description: string | null;
   raw_content_key: string | null;
   source_method: SourceMethod | null;
   extraction_model: string | null;
