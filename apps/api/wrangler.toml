@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "whats-next-db"
-database_id = "PLACEHOLDER_SET_AFTER_d1_create"
+database_id = "7beea65f-bf04-456b-ac46-3b7d55b8fcfa"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
@@ -18,7 +18,7 @@ binding = "BROWSER"
 
 [vars]
 ALLOWED_ORIGIN = "http://localhost:5173"
-EXTRACTION_MODEL = "google/gemini-2.0-flash-exp:free"
+EXTRACTION_MODEL = "google/gemma-4-31b-it:free"
 # AI_GATEWAY_URL is a secret (it contains the account id) — set via `wrangler secret put`
 # (or `.dev.vars` for local dev). It is intentionally NOT committed here.
 # Secrets (set via `wrangler secret put`): CLERK_SECRET_KEY, OPENROUTER_API_KEY, AI_GATEWAY_URL
