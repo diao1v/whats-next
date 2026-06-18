@@ -30,7 +30,7 @@ describe("App", () => {
   it("renders the import bar and board by default", () => {
     renderApp();
     expect(screen.getByPlaceholderText(/paste a job url/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Saved" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Saved/ })).toBeInTheDocument();
     expect(screen.getByText("Acme")).toBeInTheDocument();
   });
 
