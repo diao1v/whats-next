@@ -1,4 +1,5 @@
 import type { useDraggable } from "@dnd-kit/core";
+import { Loader2 } from "lucide-react";
 import { formatSalary, type Job, type Stage } from "@whats-next/shared";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,11 @@ export function JobCardBody({
   drag?: Drag;
 }) {
   if (job.import_status === "importing") {
-    return <Card className="p-3 text-sm text-muted-foreground">Importing…</Card>;
+    return (
+      <Card className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+        <Loader2 className="animate-spin" size={14} /> Extracting…
+      </Card>
+    );
   }
 
   const style = drag?.transform ? { transform: `translate(${drag.transform.x}px, ${drag.transform.y}px)` } : undefined;

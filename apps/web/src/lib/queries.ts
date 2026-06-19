@@ -2,6 +2,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { createApiClient } from "./api";
+import { notify } from "./toast";
 import type { Job, JobUpdate, ImportRequest } from "@whats-next/shared";
 
 function useApi() {
@@ -16,7 +17,6 @@ export function useJobs() {
   return useQuery({
     queryKey: ["jobs"],
     queryFn: () => api.listJobs(),
-    // poll while anything is still importing
     refetchInterval: (query) =>
       (query.state.data ?? []).some((j: Job) => j.import_status === "importing") ? 2000 : false,
   });
@@ -27,6 +27,7 @@ export function useImportJob() {
   return useMutation({
     mutationFn: (body: ImportRequest) => api.importJob(body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
+    onError: () => notify.error("Couldn't reach the server"),
   });
 }
 
@@ -34,14 +35,28 @@ export function useUpdateJob() {
   const api = useApi(); const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: JobUpdate }) => api.updateJob(id, patch),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: ["jobs"] });
+      const prev = qc.getQueryData<Job[]>(["jobs"]);
+      qc.setQueryData<Job[]>(["jobs"], (old) => (old ?? []).map((j) => (j.id === id ? { ...j, ...patch } : j)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["jobs"], ctx.prev);
+      notify.error("Couldn't save changes");
+    },
+    onSuccess: (_data, { patch }) => {
+      if (patch.stage) notify.moved(patch.stage);
+      else notify.saved();
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
   });
 }
 
 export function useDeleteJob() {
-  const api = useApi(); const qc = useQueryClient();
+  const api = useApi();
   return useMutation({
     mutationFn: (id: string) => api.deleteJob(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
+    onError: () => notify.error("Couldn't delete the job"),
   });
 }
