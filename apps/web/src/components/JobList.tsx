@@ -34,7 +34,7 @@ export function JobList({
   return (
     <div>
       <div className="mb-3 flex flex-wrap gap-2 text-xs">
-        <label className="flex items-center gap-1 text-muted">
+        <label className="flex items-center gap-1 text-muted-foreground">
           Filter
           <select aria-label="Filter by stage" value={filter} onChange={(e) => setFilter(e.target.value)}
             className="rounded-lg border border-line bg-paper px-2 py-1 text-ink">
@@ -42,7 +42,7 @@ export function JobList({
             {STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
-        <label className="flex items-center gap-1 text-muted">
+        <label className="flex items-center gap-1 text-muted-foreground">
           Sort
           <select aria-label="Sort by" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}
             className="rounded-lg border border-line bg-paper px-2 py-1 text-ink">
@@ -54,7 +54,7 @@ export function JobList({
       </div>
 
       <div className="overflow-hidden rounded-xl border border-line bg-paper shadow-card">
-        <div className={`grid ${GRID} gap-2 border-b border-line bg-[#faf1e6] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-muted`}>
+        <div className={`grid ${GRID} gap-2 border-b border-line bg-[#faf1e6] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground`}>
           <div>Role / Company</div>
           <div className="hidden sm:block">Level</div>
           <div className="hidden sm:block">Salary</div>
@@ -69,18 +69,18 @@ export function JobList({
             className={`grid ${GRID} cursor-pointer items-center gap-2 border-b border-line/60 px-4 py-3 last:border-0 hover:bg-[#fdf8f3]`}>
             <div>
               <div className="font-semibold text-ink">{job.job_title || "Untitled"}</div>
-              <div className="text-xs text-muted">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</div>
+              <div className="text-xs text-muted-foreground">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</div>
             </div>
-            <div className="hidden text-sm text-muted sm:block">{job.level ?? "—"}</div>
+            <div className="hidden text-sm text-muted-foreground sm:block">{job.level ?? "—"}</div>
             <div className="hidden text-sm text-ink sm:block">{formatSalary(job) ?? "—"}</div>
             <div>
               <StageSelect value={job.stage} onChange={(s) => onStageChange(job.id, s)} />
             </div>
-            <div className="hidden text-sm text-muted sm:block">{job.next_action_at ?? "—"}</div>
-            <div className="hidden text-sm text-muted sm:block">{job.deadline ?? "—"}</div>
+            <div className="hidden text-sm text-muted-foreground sm:block">{job.next_action_at ?? "—"}</div>
+            <div className="hidden text-sm text-muted-foreground sm:block">{job.deadline ?? "—"}</div>
             <a href={job.url} target="_blank" rel="noreferrer" aria-label="Open original posting"
               onClick={(e) => e.stopPropagation()}
-              className="text-muted hover:text-accent-deep">
+              className="text-muted-foreground hover:text-accent-deep">
               <ExternalLink size={16} />
             </a>
           </div>

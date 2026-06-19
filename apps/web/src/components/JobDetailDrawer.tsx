@@ -20,15 +20,15 @@ export function JobDetailDrawer({
     <aside className="fixed inset-x-0 bottom-0 top-auto max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-line bg-paper p-4 shadow-sheet sm:inset-y-0 sm:left-auto sm:right-0 sm:top-0 sm:max-h-none sm:w-[28rem] sm:rounded-none sm:border-l sm:border-t-0">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-ink">{job.job_title || "Untitled"}</h2>
-        <button onClick={onClose} aria-label="Close" className="text-muted hover:text-ink"><X size={18} /></button>
+        <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-ink"><X size={18} /></button>
       </div>
-      <p className="text-muted">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</p>
+      <p className="text-muted-foreground">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</p>
       {salary && <p className="mt-1 text-sm font-medium text-ink">{salary}</p>}
 
       {job.import_status === "failed" && (
         <div className="my-3 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-3">
           <span className="text-sm font-semibold text-red-600">Import failed</span>
-          <button onClick={() => onRetry(job.id)} className="rounded-md bg-accent px-3 py-1 text-sm font-semibold text-paper">Retry</button>
+          <button onClick={() => onRetry(job.id)} className="rounded-md bg-primary px-3 py-1 text-sm font-semibold text-paper">Retry</button>
         </div>
       )}
 
@@ -85,7 +85,7 @@ export function JobDetailDrawer({
       {job.snapshot && (
         <details className="mt-4">
           <summary className="cursor-pointer text-sm font-medium text-ink">Original snapshot</summary>
-          <pre className="mt-2 whitespace-pre-wrap text-xs text-muted">{job.snapshot}</pre>
+          <pre className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">{job.snapshot}</pre>
         </details>
       )}
 
@@ -94,7 +94,7 @@ export function JobDetailDrawer({
           <div className="flex items-center gap-2">
             <span className="text-sm text-ink">Delete this job?</span>
             <button onClick={() => onDelete(job.id)} className="rounded-md bg-red-600 px-3 py-1 text-sm font-semibold text-paper" aria-label="Confirm delete">Confirm delete</button>
-            <button onClick={() => setConfirming(false)} className="text-sm text-muted">Cancel</button>
+            <button onClick={() => setConfirming(false)} className="text-sm text-muted-foreground">Cancel</button>
           </div>
         ) : (
           <button onClick={() => setConfirming(true)} className="text-sm font-medium text-red-600">Delete</button>

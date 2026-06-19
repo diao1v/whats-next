@@ -2,4 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-body { background-color: #fdf8f3; color: #42342a; }
+@layer base {
+  :root {
+    --background: 30 60% 97%;          /* cream #fdf8f3 */
+    --foreground: 25 24% 21%;          /* ink #42342a */
+    --card: 36 60% 99%;                /* paper #fffdfb */
+    --card-foreground: 25 24% 21%;
+    --popover: 36 60% 99%;
+    --popover-foreground: 25 24% 21%;
+    --primary: 32 95% 44%;             /* amber #d97706 */
+    --primary-foreground: 36 60% 99%;
+    --secondary: 36 56% 90%;           /* sand #f6ead9 */
+    --secondary-foreground: 28 35% 36%;
+    --muted: 36 56% 90%;               /* sand surface */
+    --muted-foreground: 27 18% 53%;    /* brown #8a7763 */
+    --accent: 36 56% 90%;              /* sand hover surface */
+    --accent-foreground: 25 24% 21%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 36 60% 99%;
+    --border: 33 47% 88%;              /* line #f0e3d4 */
+    --input: 33 47% 88%;
+    --ring: 32 95% 44%;
+    --radius: 0.75rem;
+  }
+}
+
+body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }

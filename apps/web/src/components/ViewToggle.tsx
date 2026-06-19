@@ -6,7 +6,7 @@ export function ViewToggle() {
   const setView = useUiStore((s) => s.setView);
   const cls = (active: boolean) =>
     `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-      active ? "bg-accent text-paper" : "text-muted hover:text-ink"
+      active ? "bg-primary text-paper" : "text-muted-foreground hover:text-ink"
     }`;
   return (
     <div className="inline-flex rounded-full border border-line bg-[#f6ead9] p-0.5">

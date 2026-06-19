@@ -17,7 +17,7 @@ interface BoardProps {
 }
 
 function CountPill({ n }: { n: number }) {
-  return <span className="rounded-full bg-paper px-2 py-0.5 text-xs font-semibold text-muted">{n}</span>;
+  return <span className="rounded-full bg-paper px-2 py-0.5 text-xs font-semibold text-muted-foreground">{n}</span>;
 }
 
 // ---- desktop: multi-column board with drag-and-drop ----------------------
@@ -26,7 +26,7 @@ function DesktopColumn({ stage, count, children }: { stage: Stage; count: number
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   return (
     <section ref={setNodeRef}
-      className={`flex min-w-[200px] flex-1 flex-col rounded-2xl border border-line bg-[#faf1e6] p-2 ${isOver ? "ring-2 ring-accent/40" : ""}`}>
+      className={`flex min-w-[200px] flex-1 flex-col rounded-2xl border border-line bg-[#faf1e6] p-2 ${isOver ? "ring-2 ring-primary/40" : ""}`}>
       <h2 className="mb-2 flex items-center justify-between px-1 text-sm font-bold text-ink">
         <span>{stage}</span><CountPill n={count} />
       </h2>
@@ -86,7 +86,7 @@ function MobileBoard({ jobs, onSelect, onStageChange, onRetry }: Omit<BoardProps
             {isOpen && (
               <div className="space-y-2 p-2 pt-0">
                 {items.length === 0
-                  ? <p className="px-1 pb-2 text-xs text-muted">Nothing here yet.</p>
+                  ? <p className="px-1 pb-2 text-xs text-muted-foreground">Nothing here yet.</p>
                   : items.map((job) => (
                       <JobCardBody key={job.id} job={job} onSelect={onSelect} onStageChange={onStageChange} onRetry={onRetry} />
                     ))}
