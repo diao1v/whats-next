@@ -41,6 +41,15 @@ describe("JobList", () => {
     expect(screen.getByText("Designer")).toBeInTheDocument();
   });
 
+  it("shows level, deadline, and a link to the original posting", () => {
+    render(<JobList jobs={[j({ level: "Senior", deadline: "2026-07-01", url: "https://acme.com/jobs/1" })]}
+      loading={false} onSelect={vi.fn()} onStageChange={vi.fn()} />);
+    expect(screen.getByText("Senior")).toBeInTheDocument();
+    expect(screen.getByText(/2026-07-01/)).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /open original posting/i });
+    expect(link).toHaveAttribute("href", "https://acme.com/jobs/1");
+  });
+
   it("shows skeleton rows while loading", () => {
     const { container } = render(<JobList jobs={[]} loading={true} onSelect={vi.fn()} onStageChange={vi.fn()} />);
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
