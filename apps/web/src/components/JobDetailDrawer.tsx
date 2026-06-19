@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X, ExternalLink } from "lucide-react";
 import { STAGES, formatSalary, type Job, type JobUpdate } from "@whats-next/shared";
 
 export function JobDetailDrawer({
@@ -19,7 +20,7 @@ export function JobDetailDrawer({
     <aside className="fixed inset-x-0 bottom-0 top-auto max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-line bg-paper p-4 shadow-sheet sm:inset-y-0 sm:left-auto sm:right-0 sm:top-0 sm:max-h-none sm:w-[28rem] sm:rounded-none sm:border-l sm:border-t-0">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-ink">{job.job_title || "Untitled"}</h2>
-        <button onClick={onClose} aria-label="Close" className="text-muted hover:text-ink">✕</button>
+        <button onClick={onClose} aria-label="Close" className="text-muted hover:text-ink"><X size={18} /></button>
       </div>
       <p className="text-muted">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</p>
       {salary && <p className="mt-1 text-sm font-medium text-ink">{salary}</p>}
@@ -76,7 +77,7 @@ export function JobDetailDrawer({
       )}
 
       {job.apply_url && (
-        <a className="mt-4 inline-block text-accent-deep underline" href={job.apply_url} target="_blank" rel="noreferrer">Apply ↗</a>
+        <a className="mt-4 inline-flex items-center gap-1 text-accent-deep underline" href={job.apply_url} target="_blank" rel="noreferrer">Apply <ExternalLink size={14} /></a>
       )}
 
       {job.description && <p className="mt-4 text-sm text-ink/90">{job.description}</p>}

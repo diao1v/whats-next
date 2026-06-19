@@ -1,4 +1,5 @@
 import { SignInButton } from "@clerk/clerk-react";
+import { Check } from "lucide-react";
 
 export function SignInLanding() {
   return (
@@ -10,9 +11,9 @@ export function SignInLanding() {
         </div>
         <h2 className="text-2xl font-extrabold leading-snug text-ink">Every application,<br />one calm place.</h2>
         <ul className="space-y-1.5 text-sm text-[#7c5e3b]">
-          <li>• Paste a URL — we extract the details</li>
-          <li>• Track stages from Saved to Offer</li>
-          <li>• See salary, skills &amp; next steps at a glance</li>
+          <li className="flex items-center gap-2"><Check size={15} className="text-accent" /> Paste a URL — we extract the details</li>
+          <li className="flex items-center gap-2"><Check size={15} className="text-accent" /> Track stages from Saved to Offer</li>
+          <li className="flex items-center gap-2"><Check size={15} className="text-accent" /> See salary, skills &amp; next steps at a glance</li>
         </ul>
       </div>
       <div className="flex items-center justify-center bg-paper p-10">
