@@ -39,4 +39,10 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("radio", { name: /list/i }));
     expect(screen.getByLabelText(/sort by/i)).toBeInTheDocument();
   });
+
+  it("shows the overview stats", () => {
+    renderApp();
+    expect(screen.getByText("Tracked")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
+  });
 });
