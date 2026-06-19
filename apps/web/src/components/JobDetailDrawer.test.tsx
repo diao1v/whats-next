@@ -13,8 +13,14 @@ const baseJob: Job = {
   notes: "", created_at: "", updated_at: "", skills: ["TypeScript"],
 };
 
-const render4 = (job: Job, over: Partial<Record<string, ReturnType<typeof vi.fn>>> = {}) =>
-  render(<JobDetailDrawer job={job} onUpdate={over.onUpdate ?? vi.fn()} onClose={vi.fn()}
+type Handlers = {
+  onUpdate?: (patch: Partial<Job>) => void;
+  onPaste?: (text: string) => void;
+  onDelete?: (id: string) => void;
+  onRetry?: (id: string) => void;
+};
+const render4 = (job: Job, over: Handlers = {}) =>
+  render(<JobDetailDrawer job={job} onUpdate={(over.onUpdate ?? vi.fn()) as never} onClose={vi.fn()}
     onPaste={over.onPaste ?? vi.fn()} onDelete={over.onDelete ?? vi.fn()} onRetry={over.onRetry ?? vi.fn()} />);
 
 describe("JobDetailDrawer", () => {
