@@ -60,3 +60,24 @@ export function useDeleteJob() {
     onError: () => notify.error("Couldn't delete the job"),
   });
 }
+
+export function useTokens() {
+  const api = useApi();
+  return useQuery({ queryKey: ["tokens"], queryFn: () => api.listTokens() });
+}
+export function useCreateToken() {
+  const api = useApi(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => api.createToken(name),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tokens"] }),
+    onError: () => notify.error("Couldn't create token"),
+  });
+}
+export function useRevokeToken() {
+  const api = useApi(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteToken(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tokens"] }),
+    onError: () => notify.error("Couldn't revoke token"),
+  });
+}

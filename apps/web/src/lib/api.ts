@@ -27,6 +27,9 @@ export function createApiClient(opts: ApiOptions) {
     importJob: (body: ImportRequest) => call<Job>("/api/jobs/import", { method: "POST", body: JSON.stringify(body) }),
     updateJob: (id: string, patch: JobUpdate) => call<Job>(`/api/jobs/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
     deleteJob: (id: string) => call<void>(`/api/jobs/${id}`, { method: "DELETE" }),
+    listTokens: () => call<Array<{ id: string; name: string; created_at: string; last_used_at: string | null }>>("/api/tokens"),
+    createToken: (name: string) => call<{ id: string; name: string; token: string; created_at: string }>("/api/tokens", { method: "POST", body: JSON.stringify({ name }) }),
+    deleteToken: (id: string) => call<void>(`/api/tokens/${id}`, { method: "DELETE" }),
   };
 }
 export type ApiClient = ReturnType<typeof createApiClient>;
