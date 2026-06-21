@@ -46,4 +46,11 @@ describe("job routes", () => {
     });
     expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
   });
+
+  it("allows chrome-extension origins (for the capture extension)", async () => {
+    const res = await SELF.fetch("https://api/api/health", {
+      headers: { Origin: "chrome-extension://abcdef123" },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe("chrome-extension://abcdef123");
+  });
 });
