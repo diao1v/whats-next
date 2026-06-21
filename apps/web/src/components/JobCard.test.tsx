@@ -24,9 +24,9 @@ describe("JobCard", () => {
     expect(onSelect).toHaveBeenCalledWith("j7");
   });
 
-  it("shows Importing for an importing job", () => {
+  it("shows an extracting indicator for an importing job", () => {
     render(wrap(<JobCard job={j({ import_status: "importing" })} onSelect={vi.fn()} onStageChange={vi.fn()} onRetry={vi.fn()} />));
-    expect(screen.getByText(/importing/i)).toBeInTheDocument();
+    expect(screen.getByText(/extracting/i)).toBeInTheDocument();
   });
 
   it("shows a Retry button on a failed import", () => {

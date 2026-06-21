@@ -7,7 +7,7 @@ describe("Header", () => {
   it("renders the app name, view toggle, and user button", () => {
     render(<Header />);
     expect(screen.getByText(/what's next/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /board/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /board/i })).toBeInTheDocument();
     expect(screen.getByTestId("user-button")).toBeInTheDocument();
   });
 });

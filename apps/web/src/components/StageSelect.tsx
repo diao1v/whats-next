@@ -1,4 +1,5 @@
 import { STAGES, type Stage } from "@whats-next/shared";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function StageSelect({
   value, onChange, className,
@@ -8,14 +9,14 @@ export function StageSelect({
   className?: string;
 }) {
   return (
-    <select
-      aria-label="Change stage"
-      value={value}
-      onClick={(e) => e.stopPropagation()}
-      onChange={(e) => onChange(e.target.value as Stage)}
-      className={`rounded-lg border border-line bg-paper px-2 py-1 text-xs text-ink ${className ?? ""}`}
-    >
-      {STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
-    </select>
+    <Select value={value} onValueChange={(v) => onChange(v as Stage)}>
+      <SelectTrigger aria-label="Change stage" className={`h-8 w-auto gap-1 text-xs ${className ?? ""}`}
+        onClick={(e) => e.stopPropagation()}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {STAGES.map((s) => <SelectItem key={s} value={s} onClick={(e) => e.stopPropagation()}>{s}</SelectItem>)}
+      </SelectContent>
+    </Select>
   );
 }

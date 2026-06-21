@@ -3,11 +3,11 @@ import { describe, it, expect, vi } from "vitest";
 import { StageSelect } from "./StageSelect";
 
 describe("StageSelect", () => {
-  it("renders all stages and fires onChange with the chosen stage", () => {
+  it("fires onChange with the chosen stage", async () => {
     const onChange = vi.fn();
     render(<StageSelect value="Saved" onChange={onChange} />);
-    const select = screen.getByLabelText(/change stage/i);
-    fireEvent.change(select, { target: { value: "Applied" } });
+    fireEvent.click(screen.getByLabelText(/change stage/i));   // open
+    fireEvent.click(await screen.findByRole("option", { name: "Applied" }));
     expect(onChange).toHaveBeenCalledWith("Applied");
   });
 });

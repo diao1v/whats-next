@@ -13,45 +13,55 @@ const baseJob: Job = {
   notes: "", created_at: "", updated_at: "", skills: ["TypeScript"],
 };
 
+type Handlers = {
+  onUpdate?: (patch: Partial<Job>) => void;
+  onPaste?: (text: string) => void;
+  onDelete?: (id: string) => void;
+  onRetry?: (id: string) => void;
+};
+const render4 = (job: Job, over: Handlers = {}) =>
+  render(<JobDetailDrawer job={job} onUpdate={(over.onUpdate ?? vi.fn()) as never} onClose={vi.fn()}
+    onPaste={over.onPaste ?? vi.fn()} onDelete={over.onDelete ?? vi.fn()} onRetry={over.onRetry ?? vi.fn()} />);
+
 describe("JobDetailDrawer", () => {
-  it("changing stage calls onUpdate", () => {
+  it("changing stage calls onUpdate", async () => {
     const onUpdate = vi.fn();
-    render(<JobDetailDrawer job={baseJob} onUpdate={onUpdate} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText(/stage/i), { target: { value: "Applied" } });
+    render4(baseJob, { onUpdate });
+    fireEvent.click(screen.getByLabelText(/change stage/i));
+    fireEvent.click(await screen.findByRole("option", { name: "Applied" }));
     expect(onUpdate).toHaveBeenCalledWith({ stage: "Applied" });
   });
 
   it("shows a paste box when import_status is needs_paste", () => {
     const onPaste = vi.fn();
-    render(<JobDetailDrawer job={{ ...baseJob, import_status: "needs_paste" }} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={onPaste} onDelete={vi.fn()} onRetry={vi.fn()} />);
+    render4({ ...baseJob, import_status: "needs_paste" }, { onPaste });
     fireEvent.change(screen.getByPlaceholderText(/paste the job description/i), { target: { value: "Full text here" } });
     fireEvent.click(screen.getByRole("button", { name: /extract/i }));
     expect(onPaste).toHaveBeenCalledWith("Full text here");
   });
 
   it("shows the description summary", () => {
-    render(<JobDetailDrawer job={baseJob} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={vi.fn()} />);
+    render4(baseJob);
     expect(screen.getByText("Build backend things.")).toBeInTheDocument();
   });
 
   it("shows the salary formatted in its own currency", () => {
-    const job = { ...baseJob, salary_min: 120000, salary_max: 150000, salary_currency: "NZD", salary_period: "year" };
-    render(<JobDetailDrawer job={job} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={vi.fn()} />);
+    render4({ ...baseJob, salary_currency: "NZD" });
     expect(screen.getByText(/120,000/)).toBeInTheDocument();
     expect(screen.getByText(/\/yr/)).toBeInTheDocument();
   });
 
-  it("deletes after confirm", () => {
+  it("deletes after confirm", async () => {
     const onDelete = vi.fn();
-    render(<JobDetailDrawer job={baseJob} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={onDelete} onRetry={vi.fn()} />);
+    render4(baseJob, { onDelete });
     fireEvent.click(screen.getByRole("button", { name: /^delete$/i }));
-    fireEvent.click(screen.getByRole("button", { name: /confirm delete/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /confirm delete/i }));
     expect(onDelete).toHaveBeenCalledWith("j1");
   });
 
   it("shows Retry on a failed import", () => {
     const onRetry = vi.fn();
-    render(<JobDetailDrawer job={{ ...baseJob, import_status: "failed" }} onUpdate={vi.fn()} onClose={vi.fn()} onPaste={vi.fn()} onDelete={vi.fn()} onRetry={onRetry} />);
+    render4({ ...baseJob, import_status: "failed" }, { onRetry });
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(onRetry).toHaveBeenCalledWith("j1");
   });

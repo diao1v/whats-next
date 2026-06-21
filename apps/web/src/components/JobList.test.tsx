@@ -26,10 +26,11 @@ describe("JobList", () => {
     expect(onSelect).toHaveBeenCalledWith("j9");
   });
 
-  it("inline stage change calls onStageChange", () => {
+  it("inline stage change calls onStageChange", async () => {
     const onStageChange = vi.fn();
     render(<JobList jobs={[j({ id: "j9" })]} loading={false} onSelect={vi.fn()} onStageChange={onStageChange} />);
-    fireEvent.change(screen.getByLabelText(/change stage/i), { target: { value: "Applied" } });
+    fireEvent.click(screen.getByLabelText(/change stage/i));
+    fireEvent.click(await screen.findByRole("option", { name: "Applied" }));
     expect(onStageChange).toHaveBeenCalledWith("j9", "Applied");
   });
 

@@ -36,7 +36,13 @@ describe("App", () => {
 
   it("switches to the list view via the toggle", () => {
     renderApp();
-    fireEvent.click(screen.getByRole("button", { name: /list/i }));
+    fireEvent.click(screen.getByRole("radio", { name: /list/i }));
     expect(screen.getByLabelText(/sort by/i)).toBeInTheDocument();
+  });
+
+  it("shows the overview stats", () => {
+    renderApp();
+    expect(screen.getByText("Tracked")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
   });
 });

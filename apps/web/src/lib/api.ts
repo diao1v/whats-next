@@ -1,5 +1,9 @@
 import type { Job, JobUpdate, ImportRequest } from "@whats-next/shared";
 
+export class ApiError extends Error {
+  constructor(public status: number) { super(`API ${status}`); this.name = "ApiError"; }
+}
+
 export interface ApiOptions {
   baseUrl: string;
   getToken: () => Promise<string | null>;
@@ -14,7 +18,7 @@ export function createApiClient(opts: ApiOptions) {
       ...init,
       headers: { "content-type": "application/json", Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
     });
-    if (!res.ok) throw new Error(`API ${res.status}`);
+    if (!res.ok) throw new ApiError(res.status);
     return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
   }
   return {
