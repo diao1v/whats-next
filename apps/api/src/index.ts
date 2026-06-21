@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { requireAuth } from "./auth";
+import { requireAuth, requireClerk } from "./auth";
 import { jobs } from "./routes/jobs";
+import { tokens } from "./routes/tokens";
 
 export interface Env {
   DB: D1Database;
@@ -27,5 +28,9 @@ app.get("/api/health", (c) => c.json({ status: "ok" }));
 app.use("/api/jobs/*", requireAuth);
 app.use("/api/jobs", requireAuth);
 app.route("/api/jobs", jobs);
+
+app.use("/api/tokens/*", requireClerk);
+app.use("/api/tokens", requireClerk);
+app.route("/api/tokens", tokens);
 
 export default app;
