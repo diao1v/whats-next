@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { JobBoard } from "./JobBoard";
+import { useUiStore } from "../store/ui";
 import type { Job } from "@whats-next/shared";
 
 const j = (over: Partial<Job>): Job => ({
@@ -12,42 +13,49 @@ const j = (over: Partial<Job>): Job => ({
   applied_date: null, next_action_at: null, notes: "", created_at: "", updated_at: "", skills: [], ...over,
 });
 
-function mockViewport(isMobile: boolean) {
-  (window as { matchMedia?: unknown }).matchMedia = (query: string) => ({
-    matches: isMobile, media: query, onchange: null,
-    addEventListener: () => {}, removeEventListener: () => {},
-    addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+const props = (jobs: Job[], loading = false) => ({
+  jobs, loading, onSelect: vi.fn(), onStageChange: vi.fn(), onRetry: vi.fn(),
+});
+
+beforeEach(() => { localStorage.clear(); useUiStore.setState({ laneState: {} }); });
+
+describe("JobBoard lanes", () => {
+  it("renders a lane header for every stage", () => {
+    render(<JobBoard {...props([j({})])} />);
+    for (const stage of ["Saved", "Applied", "Phone screen", "Interview", "Offer", "Rejected/Closed"]) {
+      expect(screen.getByRole("button", { name: new RegExp(stage.replace("/", "\\/")) })).toBeInTheDocument();
+    }
   });
-}
 
-afterEach(() => { delete (window as { matchMedia?: unknown }).matchMedia; });
+  it("opens non-empty lanes and collapses empty ones by default", () => {
+    render(<JobBoard {...props([j({ id: "a", stage: "Saved" })])} />);
+    expect(screen.getByText("Backend Eng")).toBeInTheDocument();
+    expect(screen.queryByText(/nothing here yet/i)).not.toBeInTheDocument();
+  });
 
-describe("JobBoard (desktop)", () => {
-  it("renders a column per stage and places jobs", () => {
-    render(<JobBoard jobs={[j({ id: "a", stage: "Saved" }), j({ id: "b", stage: "Applied" })]}
-      loading={false} onSelect={vi.fn()} onStageChange={vi.fn()} onRetry={vi.fn()} />);
-    expect(screen.getByRole("heading", { name: /Saved/ })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Applied/ })).toBeInTheDocument();
-    expect(screen.getAllByText("Backend Eng").length).toBe(2);
+  it("toggling a lane header hides its cards", () => {
+    render(<JobBoard {...props([j({ stage: "Saved" })])} />);
+    fireEvent.click(screen.getByRole("button", { name: /Saved/ }));
+    expect(screen.queryByText("Backend Eng")).not.toBeInTheDocument();
+  });
+
+  it("Collapse all hides cards; Expand all shows them", () => {
+    render(<JobBoard {...props([j({ stage: "Saved" })])} />);
+    fireEvent.click(screen.getByRole("button", { name: /collapse all/i }));
+    expect(screen.queryByText("Backend Eng")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /expand all/i }));
+    expect(screen.getByText("Backend Eng")).toBeInTheDocument();
+  });
+
+  it("clicking a card calls onSelect", () => {
+    const p = props([j({ id: "z", stage: "Saved" })]);
+    render(<JobBoard {...p} />);
+    fireEvent.click(screen.getByText("Backend Eng"));
+    expect(p.onSelect).toHaveBeenCalledWith("z");
   });
 
   it("renders skeletons while loading", () => {
-    const { container } = render(<JobBoard jobs={[]} loading={true} onSelect={vi.fn()} onStageChange={vi.fn()} onRetry={vi.fn()} />);
+    const { container } = render(<JobBoard {...props([], true)} />);
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
-  });
-});
-
-describe("JobBoard (mobile accordion)", () => {
-  it("renders collapsible stage sections with counts and toggles them", () => {
-    mockViewport(true);
-    render(<JobBoard jobs={[j({ id: "a", stage: "Saved" })]}
-      loading={false} onSelect={vi.fn()} onStageChange={vi.fn()} onRetry={vi.fn()} />);
-    // Section headers are buttons (one per stage)
-    const savedHeader = screen.getByRole("button", { name: /Saved/ });
-    expect(savedHeader).toBeInTheDocument();
-    expect(screen.getByText("Backend Eng")).toBeInTheDocument();
-    // collapse hides the card
-    fireEvent.click(savedHeader);
-    expect(screen.queryByText("Backend Eng")).not.toBeInTheDocument();
   });
 });
