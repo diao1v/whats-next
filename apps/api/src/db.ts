@@ -39,7 +39,7 @@ export async function findEntryByUrl(
   db: D1Database, userId: string, url: string
 ): Promise<{ id: string; posting_id: string | null } | null> {
   const row = await db.prepare(
-    "SELECT id, posting_id FROM job_entries WHERE user_id = ? AND submitted_url = ? ORDER BY created_at DESC LIMIT 1"
+    "SELECT id, posting_id FROM job_entries WHERE user_id = ? AND submitted_url = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1"
   ).bind(userId, url).first<{ id: string; posting_id: string | null }>();
   return row ?? null;
 }
@@ -107,9 +107,10 @@ export async function restoreEntry(db: D1Database, userId: string, id: string): 
 }
 
 /**
- * Point an entry at a posting and mark it ready. If the user already has a *different*
- * entry for this posting, collapse onto that one (delete this entry). Returns the id of
- * the surviving entry.
+ * Point an entry at a posting and mark it ready. If the user already has another entry for
+ * this posting — including a soft-deleted one (UNIQUE(user_id, posting_id) counts deleted
+ * rows) — resurrect/keep that one and drop this placeholder. Linking always clears
+ * deleted_at so the resulting entry is visible. Returns the id of the surviving entry.
  */
 export async function linkEntryToPosting(
   db: D1Database, userId: string, entryId: string, postingId: string
@@ -119,10 +120,13 @@ export async function linkEntryToPosting(
   ).bind(userId, postingId, entryId).first<{ id: string }>();
   if (existing) {
     await db.prepare("DELETE FROM job_entries WHERE id = ? AND user_id = ?").bind(entryId, userId).run();
+    await db.prepare(
+      "UPDATE job_entries SET deleted_at = NULL, import_status = 'ready', updated_at = datetime('now') WHERE id = ? AND user_id = ?"
+    ).bind(existing.id, userId).run();
     return existing.id;
   }
   await db.prepare(
-    "UPDATE job_entries SET posting_id = ?, import_status = 'ready', updated_at = datetime('now') WHERE id = ? AND user_id = ?"
+    "UPDATE job_entries SET posting_id = ?, deleted_at = NULL, import_status = 'ready', updated_at = datetime('now') WHERE id = ? AND user_id = ?"
   ).bind(postingId, entryId, userId).run();
   return entryId;
 }

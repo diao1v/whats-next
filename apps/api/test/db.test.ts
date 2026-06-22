@@ -90,4 +90,24 @@ describe("soft delete", () => {
     expect(await restoreEntry(env.DB, "u1", e.id)).toBe(true);
     expect(await listEntries(env.DB, "u1")).toHaveLength(1);
   });
+
+  it("findEntryByUrl ignores soft-deleted entries (re-import makes a fresh one)", async () => {
+    const e = await createImportingEntry(env.DB, "u1", "https://acme.com/1");
+    await deleteEntry(env.DB, "u1", e.id);
+    expect(await findEntryByUrl(env.DB, "u1", "https://acme.com/1")).toBeNull();
+  });
+
+  it("re-capturing a deleted job's content resurrects the original entry (no duplicate, no unique conflict)", async () => {
+    const old = await createImportingEntry(env.DB, "u1", "https://acme.com/1");
+    const postingId = await createPosting(env.DB, ex);
+    await linkEntryToPosting(env.DB, "u1", old.id, postingId);
+    await deleteEntry(env.DB, "u1", old.id);              // user deletes it
+    expect(await listEntries(env.DB, "u1")).toHaveLength(0);
+    const fresh = await createImportingEntry(env.DB, "u1", "https://acme.com/2"); // re-capture, same content
+    const survivor = await linkEntryToPosting(env.DB, "u1", fresh.id, postingId);
+    expect(survivor).toBe(old.id);                        // resurrected the original, dropped the placeholder
+    const list = await listEntries(env.DB, "u1");
+    expect(list).toHaveLength(1);
+    expect(list[0].id).toBe(old.id);
+  });
 });
