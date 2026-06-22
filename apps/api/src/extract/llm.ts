@@ -11,7 +11,11 @@ const SYSTEM = "You extract structured job-posting data. Return ONLY JSON matchi
   "not the hiring company; then set agency_name. Set `salary_currency` to the ISO 4217 code " +
   "matching the posting's country/locale (e.g. NZD for a New Zealand posting, GBP for the UK, " +
   "AUD for Australia); never default to USD — infer from the location, site, or language when the " +
-  "currency symbol is ambiguous. Keep salary numbers exactly as written. For `description`, write " +
+  "currency symbol is ambiguous. Keep salary numbers exactly as written. `level` is the seniority " +
+  "and must be one of: junior, mid, senior, staff, principal. Infer it from the job title first, then " +
+  "the body — e.g. a title with Senior/Sr. → senior, Staff → staff, Principal/Lead → principal, " +
+  "Junior/Graduate/Entry/Associate → junior, Intermediate/Mid → mid. Use null only when there is no " +
+  "seniority signal at all. For `description`, write " +
   "a concise 2-4 sentence summary covering the role and its key responsibilities.";
 
 /**

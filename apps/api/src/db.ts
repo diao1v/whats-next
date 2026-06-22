@@ -189,7 +189,7 @@ async function hydrate(db: D1Database, row: Record<string, unknown>): Promise<Jo
     agency_name: str(row.agency_name),
     job_title: (row.job_title as string) ?? "",
     role: (row.role as string) ?? "",
-    level: str(row.level),
+    level: str(row.level) as Job["level"],
     salary_min: num(row.salary_min),
     salary_max: num(row.salary_max),
     salary_currency: str(row.salary_currency),

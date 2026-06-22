@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { stageSchema } from "./stages";
+import type { Level } from "./extraction";
 
 export const importStatusSchema = z.enum(["importing", "needs_paste", "ready", "failed"]);
 export type ImportStatus = z.infer<typeof importStatusSchema>;
@@ -24,7 +25,7 @@ export interface Job {
   agency_name: string | null;
   job_title: string;
   role: string;
-  level: string | null;
+  level: Level | null;
   salary_min: number | null;
   salary_max: number | null;
   salary_currency: string | null;

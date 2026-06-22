@@ -85,7 +85,7 @@ export function JobList({
               <div className="font-semibold text-ink">{job.job_title || "Untitled"}</div>
               <div className="text-xs text-muted-foreground">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</div>
             </div>
-            <div className="hidden text-sm text-muted-foreground sm:block">{job.level ?? "—"}</div>
+            <div className="hidden text-sm capitalize text-muted-foreground sm:block">{job.level ?? "—"}</div>
             <div className="hidden text-sm text-ink sm:block">{formatSalary(job) ?? "—"}</div>
             <div>
               <StageSelect value={job.stage} onChange={(s) => onStageChange(job.id, s)} />

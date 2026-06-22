@@ -43,9 +43,9 @@ describe("JobList", () => {
   });
 
   it("shows level, deadline, and a link to the original posting", () => {
-    render(<JobList jobs={[j({ level: "Senior", deadline: "2026-07-01", url: "https://acme.com/jobs/1" })]}
+    render(<JobList jobs={[j({ level: "senior", deadline: "2026-07-01", url: "https://acme.com/jobs/1" })]}
       loading={false} onSelect={vi.fn()} onStageChange={vi.fn()} />);
-    expect(screen.getByText("Senior")).toBeInTheDocument();
+    expect(screen.getByText("senior")).toBeInTheDocument();
     expect(screen.getByText(/2026-07-01/)).toBeInTheDocument();
     const link = screen.getByRole("link", { name: /open original posting/i });
     expect(link).toHaveAttribute("href", "https://acme.com/jobs/1");

@@ -7,7 +7,7 @@ import {
 
 const ex: PostingInput = {
   hash: "h1", company_name: "Acme", is_agency: false, agency_name: null, job_title: "Backend Eng",
-  role: "Backend", level: "Senior", salary_min: null, salary_max: null, salary_currency: null,
+  role: "Backend", level: "senior", salary_min: null, salary_max: null, salary_currency: null,
   salary_period: null, salary_raw_text: null, location: "Remote", is_remote: true, deadline: null,
   apply_url: null, source_site: "acme.com", description: "Build things.", snapshot: "full text",
   skills: ["TypeScript"], method: "fetch", model: "m", rawKey: "raw/h1.html",
