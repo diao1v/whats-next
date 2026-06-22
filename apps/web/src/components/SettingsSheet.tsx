@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useTokens, useCreateToken, useRevokeToken } from "../lib/queries";
 
 export function SettingsSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
@@ -18,8 +19,8 @@ export function SettingsSheet({ open, onOpenChange }: { open: boolean; onOpenCha
 
         <div className="mt-4 flex gap-2">
           <Input placeholder="Token name (e.g. Chrome)" value={name} onChange={(e) => setName(e.target.value)} />
-          <Button onClick={() => { createToken.mutate(name || "Extension"); setName(""); }} disabled={createToken.isPending}>
-            Generate token
+          <Button onClick={() => { createToken.mutate(name || "Extension"); setName(""); }} disabled={createToken.isPending} className="gap-1.5">
+            {createToken.isPending && <Spinner />} Generate token
           </Button>
         </div>
 
