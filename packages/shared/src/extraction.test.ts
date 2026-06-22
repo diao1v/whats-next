@@ -7,7 +7,7 @@ const valid = {
   agency_name: null,
   job_title: "Senior Engineer",
   role: "Backend Engineer",
-  level: "Senior",
+  level: "senior",
   salary_min: 120000,
   salary_max: 150000,
   salary_currency: "USD",
@@ -31,6 +31,14 @@ describe("extractionSchema", () => {
   });
   it("rejects a bad salary_period", () => {
     expect(() => extractionSchema.parse({ ...valid, salary_period: "fortnight" })).toThrow();
+  });
+  it("accepts the canonical levels and null", () => {
+    for (const level of ["junior", "mid", "senior", "staff", "principal", null]) {
+      expect(extractionSchema.parse({ ...valid, level }).level).toBe(level);
+    }
+  });
+  it("rejects a non-canonical level", () => {
+    expect(() => extractionSchema.parse({ ...valid, level: "Intermediate" })).toThrow();
   });
   it("requires skills to be an array of strings", () => {
     expect(() => extractionSchema.parse({ ...valid, skills: "TypeScript" })).toThrow();

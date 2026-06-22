@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 vi.mock("@clerk/clerk-react", () => ({ UserButton: () => <div data-testid="user-button" /> }));
+vi.mock("../lib/queries", () => ({
+  useTokens: () => ({ data: [] }),
+  useCreateToken: () => ({ mutate: vi.fn(), data: undefined, isPending: false }),
+  useRevokeToken: () => ({ mutate: vi.fn() }),
+}));
 import { Header } from "./Header";
 
 describe("Header", () => {

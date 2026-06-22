@@ -2,12 +2,12 @@ import { env, applyD1Migrations } from "cloudflare:test";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import {
   ensureUser, createImportingEntry, findEntryByUrl, getEntry, listEntries,
-  findPostingByHash, createPosting, linkEntryToPosting, type PostingInput,
+  findPostingByHash, createPosting, linkEntryToPosting, deleteEntry, restoreEntry, type PostingInput,
 } from "../src/db";
 
 const ex: PostingInput = {
   hash: "h1", company_name: "Acme", is_agency: false, agency_name: null, job_title: "Backend Eng",
-  role: "Backend", level: "Senior", salary_min: null, salary_max: null, salary_currency: null,
+  role: "Backend", level: "senior", salary_min: null, salary_max: null, salary_currency: null,
   salary_period: null, salary_raw_text: null, location: "Remote", is_remote: true, deadline: null,
   apply_url: null, source_site: "acme.com", description: "Build things.", snapshot: "full text",
   skills: ["TypeScript"], method: "fetch", model: "m", rawKey: "raw/h1.html",
@@ -78,5 +78,36 @@ describe("postings", () => {
     expect(survivorB).toBe(a.id); // collapsed onto the first
     expect(await getEntry(env.DB, "u1", b.id)).toBeNull();
     expect(await listEntries(env.DB, "u1")).toHaveLength(1);
+  });
+});
+
+describe("soft delete", () => {
+  it("deleteEntry hides from listEntries; restoreEntry brings it back", async () => {
+    const e = await createImportingEntry(env.DB, "u1", "https://acme.com/1");
+    expect(await listEntries(env.DB, "u1")).toHaveLength(1);
+    expect(await deleteEntry(env.DB, "u1", e.id)).toBe(true);
+    expect(await listEntries(env.DB, "u1")).toHaveLength(0);
+    expect(await restoreEntry(env.DB, "u1", e.id)).toBe(true);
+    expect(await listEntries(env.DB, "u1")).toHaveLength(1);
+  });
+
+  it("findEntryByUrl ignores soft-deleted entries (re-import makes a fresh one)", async () => {
+    const e = await createImportingEntry(env.DB, "u1", "https://acme.com/1");
+    await deleteEntry(env.DB, "u1", e.id);
+    expect(await findEntryByUrl(env.DB, "u1", "https://acme.com/1")).toBeNull();
+  });
+
+  it("re-capturing a deleted job's content resurrects the original entry (no duplicate, no unique conflict)", async () => {
+    const old = await createImportingEntry(env.DB, "u1", "https://acme.com/1");
+    const postingId = await createPosting(env.DB, ex);
+    await linkEntryToPosting(env.DB, "u1", old.id, postingId);
+    await deleteEntry(env.DB, "u1", old.id);              // user deletes it
+    expect(await listEntries(env.DB, "u1")).toHaveLength(0);
+    const fresh = await createImportingEntry(env.DB, "u1", "https://acme.com/2"); // re-capture, same content
+    const survivor = await linkEntryToPosting(env.DB, "u1", fresh.id, postingId);
+    expect(survivor).toBe(old.id);                        // resurrected the original, dropped the placeholder
+    const list = await listEntries(env.DB, "u1");
+    expect(list).toHaveLength(1);
+    expect(list[0].id).toBe(old.id);
   });
 });

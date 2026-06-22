@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ImportBar({ onImport, pending }: { onImport: (url: string) => void; pending: boolean }) {
   const [url, setUrl] = useState("");
@@ -10,7 +11,7 @@ export function ImportBar({ onImport, pending }: { onImport: (url: string) => vo
       onSubmit={(e) => { e.preventDefault(); if (url.trim()) { onImport(url.trim()); setUrl(""); } }}>
       <Input placeholder="Paste a job URL…" value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1" />
       <Button type="submit" disabled={pending} className="gap-1.5">
-        <Plus size={16} /> {pending ? "Adding…" : "Add"}
+        {pending ? <Spinner /> : <Plus size={16} />} {pending ? "Adding…" : "Add"}
       </Button>
     </form>
   );

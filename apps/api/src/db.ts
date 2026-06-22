@@ -39,7 +39,7 @@ export async function findEntryByUrl(
   db: D1Database, userId: string, url: string
 ): Promise<{ id: string; posting_id: string | null } | null> {
   const row = await db.prepare(
-    "SELECT id, posting_id FROM job_entries WHERE user_id = ? AND submitted_url = ? ORDER BY created_at DESC LIMIT 1"
+    "SELECT id, posting_id FROM job_entries WHERE user_id = ? AND submitted_url = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1"
   ).bind(userId, url).first<{ id: string; posting_id: string | null }>();
   return row ?? null;
 }
@@ -60,7 +60,7 @@ export async function listEntries(db: D1Database, userId: string): Promise<Job[]
   const { results } = await db.prepare(
     `SELECT p.*, e.*, e.id AS entry_id
        FROM job_entries e LEFT JOIN job_postings p ON p.id = e.posting_id
-      WHERE e.user_id = ? ORDER BY e.created_at DESC`
+      WHERE e.user_id = ? AND e.deleted_at IS NULL ORDER BY e.created_at DESC`
   ).bind(userId).all<Record<string, unknown>>();
   return Promise.all(results.map((r) => hydrate(db, r)));
 }
@@ -91,17 +91,26 @@ export async function markImportStatus(db: D1Database, entryId: string, status: 
 }
 
 export async function deleteEntry(db: D1Database, userId: string, id: string): Promise<boolean> {
-  const entry = await getEntry(db, userId, id);
-  if (!entry) return false;
-  // Shared posting and its R2 raw are intentionally left intact for other users.
-  await db.prepare("DELETE FROM job_entries WHERE id = ? AND user_id = ?").bind(id, userId).run();
-  return true;
+  // Soft delete: hidden from listEntries but restorable (preserves stage/notes/dates).
+  // The shared posting and its R2 raw are left intact for other users.
+  const res = await db.prepare(
+    "UPDATE job_entries SET deleted_at = datetime('now') WHERE id = ? AND user_id = ? AND deleted_at IS NULL"
+  ).bind(id, userId).run();
+  return (res.meta.changes ?? 0) > 0;
+}
+
+export async function restoreEntry(db: D1Database, userId: string, id: string): Promise<boolean> {
+  const res = await db.prepare(
+    "UPDATE job_entries SET deleted_at = NULL WHERE id = ? AND user_id = ?"
+  ).bind(id, userId).run();
+  return (res.meta.changes ?? 0) > 0;
 }
 
 /**
- * Point an entry at a posting and mark it ready. If the user already has a *different*
- * entry for this posting, collapse onto that one (delete this entry). Returns the id of
- * the surviving entry.
+ * Point an entry at a posting and mark it ready. If the user already has another entry for
+ * this posting — including a soft-deleted one (UNIQUE(user_id, posting_id) counts deleted
+ * rows) — resurrect/keep that one and drop this placeholder. Linking always clears
+ * deleted_at so the resulting entry is visible. Returns the id of the surviving entry.
  */
 export async function linkEntryToPosting(
   db: D1Database, userId: string, entryId: string, postingId: string
@@ -111,10 +120,13 @@ export async function linkEntryToPosting(
   ).bind(userId, postingId, entryId).first<{ id: string }>();
   if (existing) {
     await db.prepare("DELETE FROM job_entries WHERE id = ? AND user_id = ?").bind(entryId, userId).run();
+    await db.prepare(
+      "UPDATE job_entries SET deleted_at = NULL, import_status = 'ready', updated_at = datetime('now') WHERE id = ? AND user_id = ?"
+    ).bind(existing.id, userId).run();
     return existing.id;
   }
   await db.prepare(
-    "UPDATE job_entries SET posting_id = ?, import_status = 'ready', updated_at = datetime('now') WHERE id = ? AND user_id = ?"
+    "UPDATE job_entries SET posting_id = ?, deleted_at = NULL, import_status = 'ready', updated_at = datetime('now') WHERE id = ? AND user_id = ?"
   ).bind(postingId, entryId, userId).run();
   return entryId;
 }
@@ -177,7 +189,7 @@ async function hydrate(db: D1Database, row: Record<string, unknown>): Promise<Jo
     agency_name: str(row.agency_name),
     job_title: (row.job_title as string) ?? "",
     role: (row.role as string) ?? "",
-    level: str(row.level),
+    level: str(row.level) as Job["level"],
     salary_min: num(row.salary_min),
     salary_max: num(row.salary_max),
     salary_currency: str(row.salary_currency),

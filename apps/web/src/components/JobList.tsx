@@ -63,7 +63,21 @@ export function JobList({
           <div className="hidden sm:block">Deadline</div>
           <div className="sr-only">Link</div>
         </div>
-        {rows.map((job) => (
+        {rows.map((job) => job.import_status === "importing" ? (
+          <div key={job.id} role="status" aria-label="Extracting job details"
+            className={`grid ${GRID} items-center gap-2 border-b border-line/60 px-4 py-3 last:border-0`}>
+            <div className="space-y-1.5">
+              <div className="h-3.5 w-2/3 animate-pulse rounded bg-muted" />
+              <div className="h-2.5 w-2/5 animate-pulse rounded bg-muted" />
+              <div className="mt-1 h-1 w-24 overflow-hidden rounded-full bg-muted">
+                <div className="h-full w-1/3 rounded-full bg-primary/70 animate-indeterminate" />
+              </div>
+            </div>
+            <div className="hidden sm:block" /><div className="hidden sm:block" />
+            <div><div className="h-6 w-20 animate-pulse rounded bg-muted" /></div>
+            <div className="hidden sm:block" /><div className="hidden sm:block" /><div />
+          </div>
+        ) : (
           <div key={job.id}
             onClick={() => onSelect(job.id)}
             className={`grid ${GRID} cursor-pointer items-center gap-2 border-b border-line/60 px-4 py-3 last:border-0 hover:bg-[#fdf8f3]`}>
@@ -71,7 +85,7 @@ export function JobList({
               <div className="font-semibold text-ink">{job.job_title || "Untitled"}</div>
               <div className="text-xs text-muted-foreground">{job.company_name}{job.is_agency && job.agency_name ? ` (via ${job.agency_name})` : ""}</div>
             </div>
-            <div className="hidden text-sm text-muted-foreground sm:block">{job.level ?? "—"}</div>
+            <div className="hidden text-sm capitalize text-muted-foreground sm:block">{job.level ?? "—"}</div>
             <div className="hidden text-sm text-ink sm:block">{formatSalary(job) ?? "—"}</div>
             <div>
               <StageSelect value={job.stage} onChange={(s) => onStageChange(job.id, s)} />

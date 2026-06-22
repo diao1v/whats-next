@@ -1,5 +1,4 @@
 import type { useDraggable } from "@dnd-kit/core";
-import { Loader2 } from "lucide-react";
 import { formatSalary, type Job, type Stage } from "@whats-next/shared";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +18,12 @@ export function JobCardBody({
 }) {
   if (job.import_status === "importing") {
     return (
-      <Card className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-        <Loader2 className="animate-spin" size={14} /> Extracting…
+      <Card role="status" aria-label="Extracting job details" className="space-y-2 p-3">
+        <div className="h-3.5 w-2/3 animate-pulse rounded bg-muted" />
+        <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-full w-1/3 rounded-full bg-primary/70 animate-indeterminate" />
+        </div>
       </Card>
     );
   }

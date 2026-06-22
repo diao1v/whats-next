@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useJobs, useImportJob, useUpdateJob, useDeleteJob } from "./lib/queries";
+import { useJobs, useImportJob, useUpdateJob, useDeleteJob, useRestoreJob } from "./lib/queries";
 import { useUiStore } from "./store/ui";
 import { computeStats } from "./lib/stats";
 import { notify } from "./lib/toast";
+import { diffJobToasts } from "./lib/jobNotifications";
 import type { Job, Stage } from "@whats-next/shared";
 import { Header } from "./components/Header";
 import { ImportBar } from "./components/ImportBar";
@@ -18,21 +19,31 @@ export function App() {
   const importJob = useImportJob();
   const updateJob = useUpdateJob();
   const deleteJob = useDeleteJob();
+  const restoreJob = useRestoreJob();
   const view = useUiStore((s) => s.view);
   const selectedId = useUiStore((s) => s.selectedJobId);
   const selectJob = useUiStore((s) => s.selectJob);
   const selected = jobs.find((j) => j.id === selectedId) ?? null;
 
-  // Import lifecycle toasts: watch entries transition out of "importing".
-  const prev = useRef<Map<string, string>>(new Map());
+  // Toasts for jobs finishing import (local) or arriving (extension), but not on first
+  // load or on restore. `seen` distinguishes genuinely-new ids from reappearing ones.
+  const prevStatus = useRef<Map<string, string>>(new Map());
+  const seen = useRef<Set<string>>(new Set());
+  const seeded = useRef(false);
   useEffect(() => {
-    const prevMap = prev.current;
-    for (const j of jobs) {
-      const was = prevMap.get(j.id);
-      if (was === "importing" && j.import_status === "ready") { notify.dismiss("import"); notify.added(j.job_title, j.company_name); }
-      if (was === "importing" && j.import_status === "failed") { notify.dismiss("import"); notify.importFailed(); }
+    if (!seeded.current) {
+      jobs.forEach((j) => seen.current.add(j.id));
+      prevStatus.current = new Map(jobs.map((j) => [j.id, j.import_status]));
+      seeded.current = true;
+      return;
     }
-    prev.current = new Map(jobs.map((j) => [j.id, j.import_status]));
+    for (const t of diffJobToasts(seen.current, prevStatus.current, jobs)) {
+      notify.dismiss("import");
+      if (t.kind === "added") notify.added(t.title, t.company);
+      else notify.importFailed();
+    }
+    jobs.forEach((j) => seen.current.add(j.id));
+    prevStatus.current = new Map(jobs.map((j) => [j.id, j.import_status]));
   }, [jobs]);
 
   const startImport = (req: { url: string; pastedText?: string }) => {
@@ -45,17 +56,15 @@ export function App() {
     if (job) startImport({ url: job.url });
   };
 
-  // Deferred delete: optimistically remove, toast Undo, commit after the window.
+  // Soft delete: commit immediately (survives refresh), remove optimistically, Undo restores.
   const onDelete = (id: string) => {
     const prevJobs = qc.getQueryData<Job[]>(["jobs"]) ?? [];
     qc.setQueryData<Job[]>(["jobs"], prevJobs.filter((j) => j.id !== id));
     selectJob(null);
-    let undone = false;
-    const timer = setTimeout(() => { if (!undone) deleteJob.mutate(id); }, 5000);
+    deleteJob.mutate(id);
     notify.deletedWithUndo(() => {
-      undone = true;
-      clearTimeout(timer);
-      qc.setQueryData<Job[]>(["jobs"], prevJobs);
+      qc.setQueryData<Job[]>(["jobs"], prevJobs); // optimistic re-add
+      restoreJob.mutate(id);
     });
   };
 

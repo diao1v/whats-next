@@ -54,9 +54,40 @@ export function useUpdateJob() {
 }
 
 export function useDeleteJob() {
-  const api = useApi();
+  const api = useApi(); const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteJob(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
     onError: () => notify.error("Couldn't delete the job"),
+  });
+}
+
+export function useRestoreJob() {
+  const api = useApi(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.restoreJob(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
+    onError: () => notify.error("Couldn't restore the job"),
+  });
+}
+
+export function useTokens() {
+  const api = useApi();
+  return useQuery({ queryKey: ["tokens"], queryFn: () => api.listTokens() });
+}
+export function useCreateToken() {
+  const api = useApi(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => api.createToken(name),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tokens"] }),
+    onError: () => notify.error("Couldn't create token"),
+  });
+}
+export function useRevokeToken() {
+  const api = useApi(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteToken(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tokens"] }),
+    onError: () => notify.error("Couldn't revoke token"),
   });
 }

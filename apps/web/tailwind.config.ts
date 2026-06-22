@@ -22,6 +22,13 @@ export default {
       },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
       boxShadow: { card: "0 2px 8px rgba(180,120,60,0.08)", sheet: "0 8px 30px rgba(120,80,40,0.18)" },
+      keyframes: {
+        indeterminate: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(300%)" },
+        },
+      },
+      animation: { indeterminate: "indeterminate 1.1s ease-in-out infinite" },
     },
   },
   plugins: [animate],

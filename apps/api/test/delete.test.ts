@@ -19,4 +19,16 @@ describe("DELETE /api/jobs/:id", () => {
     const list = await (await SELF.fetch("https://api/api/jobs", auth)).json<unknown[]>();
     expect(list).toHaveLength(0);
   });
+
+  it("restore brings a deleted job back", async () => {
+    const created = await (await SELF.fetch("https://api/api/jobs/import", {
+      method: "POST", ...auth, body: JSON.stringify({ url: "https://acme.com/2" }),
+    })).json<{ id: string }>();
+    await SELF.fetch(`https://api/api/jobs/${created.id}`, { method: "DELETE", ...auth });
+    expect(await (await SELF.fetch("https://api/api/jobs", auth)).json<unknown[]>()).toHaveLength(0);
+
+    const restore = await SELF.fetch(`https://api/api/jobs/${created.id}/restore`, { method: "POST", ...auth });
+    expect(restore.status).toBe(204);
+    expect(await (await SELF.fetch("https://api/api/jobs", auth)).json<unknown[]>()).toHaveLength(1);
+  });
 });

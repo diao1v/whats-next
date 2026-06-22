@@ -5,7 +5,7 @@ import type { Job } from "@whats-next/shared";
 
 const baseJob: Job = {
   id: "j1", user_id: "u1", company_name: "Acme", is_agency: false, agency_name: null,
-  job_title: "Backend Eng", role: "Backend", level: "Senior", salary_min: 120000, salary_max: 150000,
+  job_title: "Backend Eng", role: "Backend", level: "senior", salary_min: 120000, salary_max: 150000,
   salary_currency: "USD", salary_period: "year", salary_raw_text: "$120k-150k", location: "Remote",
   is_remote: true, deadline: null, url: "https://a.com/1", apply_url: "https://a.com/apply",
   source_site: "a.com", snapshot: "Job text", description: "Build backend things.", raw_content_key: "raw/j1.html", source_method: "fetch",

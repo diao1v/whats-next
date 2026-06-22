@@ -18,7 +18,7 @@ binding = "BROWSER"
 
 [vars]
 ALLOWED_ORIGIN = "http://localhost:5173,https://whats-next-web.tuicaodanad.workers.dev"
-EXTRACTION_MODEL = "google/gemma-4-31b-it:free, qwen/qwen3-next-80b-a3b-instruct:free"
+EXTRACTION_MODEL = "google/gemma-4-31b-it:free,qwen/qwen3-next-80b-a3b-instruct:free,deepseek/deepseek-v4-flash"
 # AI_GATEWAY_URL is a secret (it contains the account id) — set via `wrangler secret put`
 # (or `.dev.vars` for local dev). It is intentionally NOT committed here.
 # Secrets (set via `wrangler secret put`): CLERK_SECRET_KEY, OPENROUTER_API_KEY, AI_GATEWAY_URL
