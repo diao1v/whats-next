@@ -1,4 +1,4 @@
-import { send, DEFAULT_API_URL, normalizeApiUrl } from "./lib/importClient";
+import { send, testConnection, DEFAULT_API_URL, normalizeApiUrl } from "./lib/importClient";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -47,14 +47,8 @@ $("save").addEventListener("click", async () => {
 
 $("test").addEventListener("click", async () => {
   setStatus(settingsMsg, "Testing…");
-  try {
-    const res = await fetch(`${normalizeApiUrl(apiUrlEl.value)}/api/jobs`, {
-      headers: { Authorization: `Bearer ${tokenEl.value.trim()}` },
-    });
-    res.ok ? setStatus(settingsMsg, "Connection OK ✓", "ok") : setStatus(settingsMsg, `Failed (status ${res.status}).`, "err");
-  } catch {
-    setStatus(settingsMsg, "Couldn't reach the server.", "err");
-  }
+  const r = await testConnection(apiUrlEl.value, tokenEl.value.trim());
+  setStatus(settingsMsg, r.message, r.ok ? "ok" : "err");
 });
 
 // --- capture ---

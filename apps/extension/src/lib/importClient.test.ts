@@ -1,5 +1,37 @@
 import { describe, it, expect, vi } from "vitest";
-import { buildImportRequest, send, normalizeApiUrl } from "./importClient";
+import { buildImportRequest, send, normalizeApiUrl, interpretTestResponse, testConnection } from "./importClient";
+
+describe("interpretTestResponse", () => {
+  it("passes only on a JSON 200 (real API)", () => {
+    expect(interpretTestResponse(200, "application/json")).toEqual({ ok: true, message: "Connection OK ✓" });
+  });
+  it("rejects an HTML 200 (SPA fallback / wrong URL = the web app)", () => {
+    const r = interpretTestResponse(200, "text/html; charset=UTF-8");
+    expect(r.ok).toBe(false);
+    expect(r.message).toMatch(/api url/i);
+  });
+  it("treats 401 as reachable-but-bad-token", () => {
+    const r = interpretTestResponse(401, "application/json");
+    expect(r.ok).toBe(false);
+    expect(r.message).toMatch(/token/i);
+  });
+  it("reports other statuses", () => {
+    expect(interpretTestResponse(404, "text/plain").ok).toBe(false);
+  });
+});
+
+describe("testConnection", () => {
+  it("uses the normalized origin and maps a JSON 200 to ok", async () => {
+    const f = vi.fn().mockResolvedValue(new Response("[]", { status: 200, headers: { "content-type": "application/json" } }));
+    const r = await testConnection("http://localhost:8787/api/jobs", "wn_t", f);
+    expect(f.mock.calls[0][0]).toBe("http://localhost:8787/api/jobs");
+    expect(r.ok).toBe(true);
+  });
+  it("maps a network error to a friendly message", async () => {
+    const f = vi.fn().mockRejectedValue(new Error("down"));
+    expect((await testConnection("http://x", "t", f)).ok).toBe(false);
+  });
+});
 
 describe("normalizeApiUrl", () => {
   it("strips a trailing path (e.g. an accidental /api/jobs) to the origin", () => {
