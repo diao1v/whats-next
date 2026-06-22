@@ -4,6 +4,7 @@ import { useJobs, useImportJob, useUpdateJob, useDeleteJob, useRestoreJob } from
 import { useUiStore } from "./store/ui";
 import { computeStats } from "./lib/stats";
 import { notify } from "./lib/toast";
+import { diffJobToasts } from "./lib/jobNotifications";
 import type { Job, Stage } from "@whats-next/shared";
 import { Header } from "./components/Header";
 import { ImportBar } from "./components/ImportBar";
@@ -24,16 +25,25 @@ export function App() {
   const selectJob = useUiStore((s) => s.selectJob);
   const selected = jobs.find((j) => j.id === selectedId) ?? null;
 
-  // Import lifecycle toasts: watch entries transition out of "importing".
-  const prev = useRef<Map<string, string>>(new Map());
+  // Toasts for jobs finishing import (local) or arriving (extension), but not on first
+  // load or on restore. `seen` distinguishes genuinely-new ids from reappearing ones.
+  const prevStatus = useRef<Map<string, string>>(new Map());
+  const seen = useRef<Set<string>>(new Set());
+  const seeded = useRef(false);
   useEffect(() => {
-    const prevMap = prev.current;
-    for (const j of jobs) {
-      const was = prevMap.get(j.id);
-      if (was === "importing" && j.import_status === "ready") { notify.dismiss("import"); notify.added(j.job_title, j.company_name); }
-      if (was === "importing" && j.import_status === "failed") { notify.dismiss("import"); notify.importFailed(); }
+    if (!seeded.current) {
+      jobs.forEach((j) => seen.current.add(j.id));
+      prevStatus.current = new Map(jobs.map((j) => [j.id, j.import_status]));
+      seeded.current = true;
+      return;
     }
-    prev.current = new Map(jobs.map((j) => [j.id, j.import_status]));
+    for (const t of diffJobToasts(seen.current, prevStatus.current, jobs)) {
+      notify.dismiss("import");
+      if (t.kind === "added") notify.added(t.title, t.company);
+      else notify.importFailed();
+    }
+    jobs.forEach((j) => seen.current.add(j.id));
+    prevStatus.current = new Map(jobs.map((j) => [j.id, j.import_status]));
   }, [jobs]);
 
   const startImport = (req: { url: string; pastedText?: string }) => {
