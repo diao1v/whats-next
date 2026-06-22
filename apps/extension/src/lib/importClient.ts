@@ -1,4 +1,20 @@
+export const DEFAULT_API_URL = "https://whats-next-api.tuicaodanad.workers.dev";
+
 export interface Capture { url: string; text: string; }
+
+/** Reduce any entered API URL to its origin (drops a stray trailing path like /api/jobs and slashes). */
+export function normalizeApiUrl(input: string): string {
+  const raw = input.trim();
+  try {
+    return new URL(raw).origin;
+  } catch {
+    try {
+      return new URL(`https://${raw}`).origin;
+    } catch {
+      return raw;
+    }
+  }
+}
 
 export function buildImportRequest(apiUrl: string, token: string, cap: Capture): { url: string; init: RequestInit } {
   return {

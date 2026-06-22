@@ -1,12 +1,14 @@
-import { send } from "./lib/importClient";
+import { send, DEFAULT_API_URL, normalizeApiUrl } from "./lib/importClient";
 
 const statusEl = document.getElementById("status")!;
 const btn = document.getElementById("capture") as HTMLButtonElement;
 
 btn.addEventListener("click", async () => {
-  const { apiUrl, token } = await chrome.storage.sync.get(["apiUrl", "token"]);
-  if (!apiUrl || !token) {
-    statusEl.innerHTML = `Set your API URL and token in <a href="#" id="opt">Options</a>.`;
+  const stored = await chrome.storage.sync.get(["apiUrl", "token"]);
+  const apiUrl = normalizeApiUrl((stored.apiUrl as string) || DEFAULT_API_URL);
+  const token = stored.token as string | undefined;
+  if (!token) {
+    statusEl.innerHTML = `Set your API token in <a href="#" id="opt">Options</a>.`;
     document.getElementById("opt")?.addEventListener("click", () => chrome.runtime.openOptionsPage());
     return;
   }
