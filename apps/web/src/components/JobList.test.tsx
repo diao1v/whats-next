@@ -51,6 +51,17 @@ describe("JobList", () => {
     expect(link).toHaveAttribute("href", "https://acme.com/jobs/1");
   });
 
+  it("renders an importing job as a non-interactive loading row (no title, no stage select)", () => {
+    const onSelect = vi.fn();
+    render(<JobList jobs={[j({ id: "imp", import_status: "importing", job_title: "" })]}
+      loading={false} onSelect={onSelect} onStageChange={vi.fn()} />);
+    expect(screen.getByRole("status", { name: /extracting/i })).toBeInTheDocument();
+    expect(screen.queryByText(/untitled/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/change stage/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("status", { name: /extracting/i }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
   it("shows skeleton rows while loading", () => {
     const { container } = render(<JobList jobs={[]} loading={true} onSelect={vi.fn()} onStageChange={vi.fn()} />);
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
