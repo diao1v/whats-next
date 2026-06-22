@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "description": "Capture the job on this page into What's Next.",
   "action": { "default_popup": "popup.html" },
-  "options_page": "options.html",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["<all_urls>"]
 }
