@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useJobs, useImportJob, useUpdateJob, useDeleteJob } from "./lib/queries";
+import { useJobs, useImportJob, useUpdateJob, useDeleteJob, useRestoreJob } from "./lib/queries";
 import { useUiStore } from "./store/ui";
 import { computeStats } from "./lib/stats";
 import { notify } from "./lib/toast";
@@ -18,6 +18,7 @@ export function App() {
   const importJob = useImportJob();
   const updateJob = useUpdateJob();
   const deleteJob = useDeleteJob();
+  const restoreJob = useRestoreJob();
   const view = useUiStore((s) => s.view);
   const selectedId = useUiStore((s) => s.selectedJobId);
   const selectJob = useUiStore((s) => s.selectJob);
@@ -45,17 +46,15 @@ export function App() {
     if (job) startImport({ url: job.url });
   };
 
-  // Deferred delete: optimistically remove, toast Undo, commit after the window.
+  // Soft delete: commit immediately (survives refresh), remove optimistically, Undo restores.
   const onDelete = (id: string) => {
     const prevJobs = qc.getQueryData<Job[]>(["jobs"]) ?? [];
     qc.setQueryData<Job[]>(["jobs"], prevJobs.filter((j) => j.id !== id));
     selectJob(null);
-    let undone = false;
-    const timer = setTimeout(() => { if (!undone) deleteJob.mutate(id); }, 5000);
+    deleteJob.mutate(id);
     notify.deletedWithUndo(() => {
-      undone = true;
-      clearTimeout(timer);
-      qc.setQueryData<Job[]>(["jobs"], prevJobs);
+      qc.setQueryData<Job[]>(["jobs"], prevJobs); // optimistic re-add
+      restoreJob.mutate(id);
     });
   };
 

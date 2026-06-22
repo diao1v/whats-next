@@ -2,7 +2,7 @@ import { env, applyD1Migrations } from "cloudflare:test";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import {
   ensureUser, createImportingEntry, findEntryByUrl, getEntry, listEntries,
-  findPostingByHash, createPosting, linkEntryToPosting, type PostingInput,
+  findPostingByHash, createPosting, linkEntryToPosting, deleteEntry, restoreEntry, type PostingInput,
 } from "../src/db";
 
 const ex: PostingInput = {
@@ -77,6 +77,17 @@ describe("postings", () => {
     expect(survivorA).toBe(a.id);
     expect(survivorB).toBe(a.id); // collapsed onto the first
     expect(await getEntry(env.DB, "u1", b.id)).toBeNull();
+    expect(await listEntries(env.DB, "u1")).toHaveLength(1);
+  });
+});
+
+describe("soft delete", () => {
+  it("deleteEntry hides from listEntries; restoreEntry brings it back", async () => {
+    const e = await createImportingEntry(env.DB, "u1", "https://acme.com/1");
+    expect(await listEntries(env.DB, "u1")).toHaveLength(1);
+    expect(await deleteEntry(env.DB, "u1", e.id)).toBe(true);
+    expect(await listEntries(env.DB, "u1")).toHaveLength(0);
+    expect(await restoreEntry(env.DB, "u1", e.id)).toBe(true);
     expect(await listEntries(env.DB, "u1")).toHaveLength(1);
   });
 });

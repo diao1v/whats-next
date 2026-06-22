@@ -60,7 +60,7 @@ export async function listEntries(db: D1Database, userId: string): Promise<Job[]
   const { results } = await db.prepare(
     `SELECT p.*, e.*, e.id AS entry_id
        FROM job_entries e LEFT JOIN job_postings p ON p.id = e.posting_id
-      WHERE e.user_id = ? ORDER BY e.created_at DESC`
+      WHERE e.user_id = ? AND e.deleted_at IS NULL ORDER BY e.created_at DESC`
   ).bind(userId).all<Record<string, unknown>>();
   return Promise.all(results.map((r) => hydrate(db, r)));
 }
@@ -91,11 +91,19 @@ export async function markImportStatus(db: D1Database, entryId: string, status: 
 }
 
 export async function deleteEntry(db: D1Database, userId: string, id: string): Promise<boolean> {
-  const entry = await getEntry(db, userId, id);
-  if (!entry) return false;
-  // Shared posting and its R2 raw are intentionally left intact for other users.
-  await db.prepare("DELETE FROM job_entries WHERE id = ? AND user_id = ?").bind(id, userId).run();
-  return true;
+  // Soft delete: hidden from listEntries but restorable (preserves stage/notes/dates).
+  // The shared posting and its R2 raw are left intact for other users.
+  const res = await db.prepare(
+    "UPDATE job_entries SET deleted_at = datetime('now') WHERE id = ? AND user_id = ? AND deleted_at IS NULL"
+  ).bind(id, userId).run();
+  return (res.meta.changes ?? 0) > 0;
+}
+
+export async function restoreEntry(db: D1Database, userId: string, id: string): Promise<boolean> {
+  const res = await db.prepare(
+    "UPDATE job_entries SET deleted_at = NULL WHERE id = ? AND user_id = ?"
+  ).bind(id, userId).run();
+  return (res.meta.changes ?? 0) > 0;
 }
 
 /**

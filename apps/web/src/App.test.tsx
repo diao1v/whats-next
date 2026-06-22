@@ -20,6 +20,7 @@ vi.mock("./lib/queries", () => ({
   useImportJob: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateJob: () => ({ mutate: vi.fn() }),
   useDeleteJob: () => ({ mutate: vi.fn() }),
+  useRestoreJob: () => ({ mutate: vi.fn() }),
   useTokens: () => ({ data: [] }),
   useCreateToken: () => ({ mutate: vi.fn(), data: undefined, isPending: false }),
   useRevokeToken: () => ({ mutate: vi.fn() }),

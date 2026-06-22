@@ -4,7 +4,7 @@ import { importRequestSchema, jobUpdateSchema } from "@whats-next/shared";
 import type { Env } from "../index";
 import {
   ensureUser, createImportingEntry, findEntryByUrl, getEntry, listEntries,
-  updateEntry, listEvents, deleteEntry, markImportStatus,
+  updateEntry, listEvents, deleteEntry, restoreEntry, markImportStatus,
 } from "../db";
 import { runImport } from "../import";
 import { realFetchDeps } from "../extract/fetcher";
@@ -56,5 +56,10 @@ jobs.get("/:id/events", async (c) =>
 
 jobs.delete("/:id", async (c) => {
   const ok = await deleteEntry(c.env.DB, c.get("userId"), c.req.param("id"));
+  return ok ? c.body(null, 204) : c.json({ error: "not found" }, 404);
+});
+
+jobs.post("/:id/restore", async (c) => {
+  const ok = await restoreEntry(c.env.DB, c.get("userId"), c.req.param("id"));
   return ok ? c.body(null, 204) : c.json({ error: "not found" }, 404);
 });

@@ -54,10 +54,20 @@ export function useUpdateJob() {
 }
 
 export function useDeleteJob() {
-  const api = useApi();
+  const api = useApi(); const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteJob(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
     onError: () => notify.error("Couldn't delete the job"),
+  });
+}
+
+export function useRestoreJob() {
+  const api = useApi(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.restoreJob(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["jobs"] }),
+    onError: () => notify.error("Couldn't restore the job"),
   });
 }
 
